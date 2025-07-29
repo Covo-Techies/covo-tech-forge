@@ -23,11 +23,13 @@ import {
   Headphones
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
 
 export default function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { getTotalItems } = useCart();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -74,9 +76,14 @@ export default function Header() {
                 Shop
               </DropdownMenuTrigger>
               <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link to="/products" className="flex items-center space-x-2">
+                    <span>All Products</span>
+                  </Link>
+                </DropdownMenuItem>
                 {categories.map((category) => (
                   <DropdownMenuItem key={category.name} asChild>
-                    <Link to={category.href} className="flex items-center space-x-2">
+                    <Link to={`/products?category=${category.name}`} className="flex items-center space-x-2">
                       <category.icon className="h-4 w-4" />
                       <span>{category.name}</span>
                     </Link>
@@ -126,12 +133,14 @@ export default function Header() {
             <Button variant="ghost" size="icon" className="relative" asChild>
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
-                >
-                  0
-                </Badge>
+                {getTotalItems() > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
+                  >
+                    {getTotalItems()}
+                  </Badge>
+                )}
               </Link>
             </Button>
 
