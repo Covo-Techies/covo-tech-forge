@@ -20,6 +20,10 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('paystack');
   
+  // Debug logging
+  console.log('Checkout component - items:', items);
+  console.log('Checkout component - user:', user);
+  
   const [shippingAddress, setShippingAddress] = useState({
     fullName: '',
     email: user?.email || '',
@@ -61,21 +65,32 @@ export default function Checkout() {
 
     setLoading(true);
     try {
+      console.log('Starting checkout with shipping address:', shippingAddress);
+      console.log('Cart items:', items);
+      
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: { shippingAddress }
       });
 
-      if (error) throw error;
+      console.log('Payment response:', { data, error });
+
+      if (error) {
+        console.error('Payment error:', error);
+        throw error;
+      }
 
       if (data?.url) {
+        console.log('Clearing cart and redirecting to:', data.url);
         await clearCart();
         window.location.href = data.url;
+      } else {
+        throw new Error('No payment URL received');
       }
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
         title: "Checkout Failed",
-        description: "Please try again",
+        description: error.message || "Please try again",
         variant: "destructive"
       });
     } finally {
@@ -193,15 +208,17 @@ export default function Checkout() {
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between items-center">
+                {items && items.length > 0 ? items.map((item) => (
+                  <div key={item.product?.id || item.id} className="flex justify-between items-center">
                     <div className="flex-1">
-                      <p className="font-medium">{item.product.name}</p>
-                      <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                      <p className="font-medium">{item.product?.name || 'Unknown Product'}</p>
+                      <p className="text-sm text-muted-foreground">Qty: {item.quantity || 0}</p>
                     </div>
-                    <p className="font-medium">KSH {(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-medium">KSH {((item.product?.price || 0) * (item.quantity || 0)).toFixed(2)}</p>
                   </div>
-                ))}
+                )) : (
+                  <div>No items in cart</div>
+                )}
                 
                 <Separator />
                 
