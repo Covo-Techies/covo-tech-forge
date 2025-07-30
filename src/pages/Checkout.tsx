@@ -34,10 +34,14 @@ export default function Checkout() {
     postalCode: ''
   });
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
+  if (user === undefined) {
+  return <div>Loading...</div>; // or use a spinner/loading screen
+}
+
+if (user === null) {
+  navigate('/auth');
+  return null;
+}
 
   if (items.length === 0) {
     navigate('/cart');
