@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -41,48 +40,40 @@ serve(async (req) => {
       throw new Error("Cart is empty");
     }
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
-    });
+    // Initialize Paystack
+    const paystackSecretKey = Deno.env.get("PAYSTACK_SECRET_KEY");
+    if (!paystackSecretKey) throw new Error("PAYSTACK_SECRET_KEY is not set");
 
-    // Check if a Stripe customer record exists for this user
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
-
-    // Calculate total amount
+    // Calculate total amount in kobo (KSH smallest unit)
     const totalAmount = cartItems.reduce((sum, item) => 
       sum + (item.product.price * item.quantity), 0
     );
+    const amountInKobo = Math.round(totalAmount * 100);
 
-    // Create line items for Stripe
-    const lineItems = cartItems.map(item => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: item.product.name,
+    // Create Paystack transaction
+    const paystackResponse = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${paystackSecretKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: user.email,
+        amount: amountInKobo,
+        currency: "KES",
+        callback_url: `${req.headers.get("origin")}/payment-success`,
+        cancel_action: `${req.headers.get("origin")}/cart`,
+        metadata: {
+          user_id: user.id,
+          total_amount: totalAmount.toString(),
         },
-        unit_amount: Math.round(item.product.price * 100), // Convert to cents
-      },
-      quantity: item.quantity,
-    }));
-
-    // Create a one-time payment session
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/cart`,
-      metadata: {
-        user_id: user.id,
-        total_amount: totalAmount.toString(),
-      },
+      }),
     });
+
+    const paystackData = await paystackResponse.json();
+    if (!paystackData.status) {
+      throw new Error(paystackData.message || "Failed to initialize payment");
+    }
 
     // Create order record in Supabase
     const supabaseService = createClient(
@@ -95,7 +86,7 @@ serve(async (req) => {
       .from("orders")
       .insert({
         user_id: user.id,
-        stripe_session_id: session.id,
+        stripe_session_id: paystackData.data.reference,
         total_amount: totalAmount,
         status: "pending",
       })
@@ -118,7 +109,7 @@ serve(async (req) => {
 
     if (orderItemsError) throw orderItemsError;
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    return new Response(JSON.stringify({ url: paystackData.data.authorization_url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
