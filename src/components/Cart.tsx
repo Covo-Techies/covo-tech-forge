@@ -43,7 +43,7 @@ export default function Cart() {
             <div className="flex-1">
               <h4 className="font-semibold">{item.product.name}</h4>
               <p className="text-sm text-muted-foreground">
-                ${item.product.price} each
+                KSH {item.product.price.toFixed(2)} each
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export default function Cart() {
             </div>
             <div className="text-right">
               <p className="font-semibold">
-                ${(item.product.price * item.quantity).toFixed(2)}
+                KSH {(item.product.price * item.quantity).toFixed(2)}
               </p>
               <Button
                 variant="ghost"
@@ -85,23 +85,13 @@ export default function Cart() {
         
         <div className="flex justify-between items-center text-lg font-semibold">
           <span>Total:</span>
-          <span>${getTotalPrice().toFixed(2)}</span>
+          <span>KSH {getTotalPrice().toFixed(2)}</span>
         </div>
         
         <Button 
           className="w-full" 
           size="lg"
-          onClick={async () => {
-            try {
-              const { data, error } = await supabase.functions.invoke('create-payment');
-              if (error) throw error;
-              if (data?.url) {
-                window.open(data.url, '_blank');
-              }
-            } catch (error) {
-              console.error('Checkout error:', error);
-            }
-          }}
+          onClick={() => window.location.href = '/checkout'}
         >
           Proceed to Checkout
         </Button>

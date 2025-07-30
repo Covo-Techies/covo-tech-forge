@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,13 +30,15 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="group hover:shadow-lg transition-shadow">
       <CardHeader className="p-0">
-        <div className="aspect-square overflow-hidden rounded-t-lg">
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
+        <Link to={`/product/${product.id}`}>
+          <div className="aspect-square overflow-hidden rounded-t-lg">
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+        </Link>
         {product.featured && (
           <Badge className="absolute top-2 left-2" variant="secondary">
             <Star className="w-3 h-3 mr-1" />
@@ -44,10 +47,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
       </CardHeader>
       <CardContent className="p-4">
-        <CardTitle className="text-lg mb-2">{product.name}</CardTitle>
+        <Link to={`/product/${product.id}`}>
+          <CardTitle className="text-lg mb-2 hover:text-primary transition-colors">{product.name}</CardTitle>
+        </Link>
         <p className="text-muted-foreground text-sm mb-3">{product.description}</p>
         <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold">${product.price}</span>
+          <span className="text-2xl font-bold">KSH {product.price.toFixed(2)}</span>
           <Badge variant="outline">{product.category}</Badge>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
