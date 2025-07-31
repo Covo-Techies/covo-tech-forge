@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import ProductCard from '@/components/ProductCard';
+import Header from '@/components/layout/Header';
 
 interface Product {
   id: string;
@@ -90,25 +91,30 @@ export default function Products() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="aspect-square bg-muted rounded-t-lg" />
-              <CardContent className="p-4">
-                <div className="h-4 bg-muted rounded mb-2" />
-                <div className="h-3 bg-muted rounded mb-3" />
-                <div className="h-6 bg-muted rounded" />
-              </CardContent>
-            </Card>
-          ))}
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <div className="aspect-square bg-muted rounded-t-lg" />
+                <CardContent className="p-4">
+                  <div className="h-4 bg-muted rounded mb-2" />
+                  <div className="h-3 bg-muted rounded mb-3" />
+                  <div className="h-6 bg-muted rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-6">Products</h1>
         
@@ -181,6 +187,7 @@ export default function Products() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }
