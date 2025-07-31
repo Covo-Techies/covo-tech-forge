@@ -43,17 +43,17 @@ export default function Contact() {
     {
       icon: Phone,
       title: "Call Us",
-      details: ["+1 (555) 123-4567", "+1 (555) 987-6543"]
+      details: ["+254 795 997546"]
     },
     {
       icon: Mail,
       title: "Email Us",
-      details: ["hello@ourstore.com", "support@ourstore.com"]
+      details: ["covotechnologies@gmail.com", "support@ourstore.com"]
     },
     {
       icon: Clock,
       title: "Business Hours",
-      details: ["Mon - Fri: 9:00 AM - 6:00 PM", "Sat: 10:00 AM - 4:00 PM", "Sun: Closed"]
+      details: ["Mon - Fri: 9:00 AM - 7:00 PM", "Sat: 9:00 AM - 7:00 PM", "Sun: Closed"]
     }
   ];
 
