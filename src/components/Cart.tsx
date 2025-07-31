@@ -13,7 +13,7 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <Card className="w-full max-w-2xl mx-auto">
+      <Card className="w-full max-w-2xl mx-auto animate-fade-in hover-lift">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <ShoppingBag className="w-16 h-16 text-muted-foreground mb-4" />
           <h3 className="text-xl font-semibold mb-2">Your cart is empty</h3>
@@ -26,7 +26,7 @@ export default function Cart() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto animate-fade-in hover-lift">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShoppingBag className="w-5 h-5" />
@@ -36,7 +36,7 @@ export default function Cart() {
       </CardHeader>
       <CardContent className="space-y-4">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg">
+          <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg hover-lift transition-all duration-300">
             <img
               src={item.product.image_url}
               alt={item.product.name}
@@ -54,6 +54,7 @@ export default function Cart() {
                 size="icon"
                 onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
                 disabled={item.quantity <= 1}
+                className="hover-scale"
               >
                 <Minus className="w-4 h-4" />
               </Button>
@@ -63,6 +64,7 @@ export default function Cart() {
                 size="icon"
                 onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
                 disabled={item.quantity >= item.product.stock_quantity}
+                className="hover-scale"
               >
                 <Plus className="w-4 h-4" />
               </Button>
@@ -75,7 +77,7 @@ export default function Cart() {
                 variant="ghost"
                 size="sm"
                 onClick={() => removeFromCart(item.product_id)}
-                className="text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive hover-scale"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -91,7 +93,7 @@ export default function Cart() {
         </div>
         
         <Button 
-          className="w-full" 
+          className="w-full hover-scale" 
           size="lg"
           onClick={() => navigate('/checkout')}
         >

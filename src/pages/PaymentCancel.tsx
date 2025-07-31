@@ -13,11 +13,11 @@ export default function PaymentCancel() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16 animate-fade-in">
         <div className="max-w-md mx-auto">
-          <Card>
+          <Card className="animate-scale-in hover-lift">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 pulse-slow">
                 <XCircle className="w-8 h-8 text-red-600" />
               </div>
               <CardTitle className="text-2xl text-red-600">Payment Cancelled</CardTitle>
@@ -32,14 +32,14 @@ export default function PaymentCancel() {
               <div className="space-y-2 pt-4">
                 <Button 
                   onClick={() => navigate('/cart')} 
-                  className="w-full"
+                  className="w-full hover-scale"
                 >
                   Return to Cart
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => navigate('/products')} 
-                  className="w-full"
+                  className="w-full hover-scale"
                 >
                   Continue Shopping
                 </Button>

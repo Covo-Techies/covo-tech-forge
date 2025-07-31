@@ -193,15 +193,15 @@ export default function ProductManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex justify-between items-center fade-in-up">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Product Management</h2>
           <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetForm} className="hover-scale">
               <Plus className="h-4 w-4 mr-2" />
               Add Product
             </Button>
@@ -304,7 +304,7 @@ export default function ProductManagement() {
         </Dialog>
       </div>
 
-      <Card>
+      <Card className="hover-lift">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -361,6 +361,7 @@ export default function ProductManagement() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(product)}
+                        className="hover-scale"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -368,6 +369,7 @@ export default function ProductManagement() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(product.id)}
+                        className="hover-scale"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

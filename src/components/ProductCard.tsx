@@ -28,7 +28,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow">
+    <Card className="group hover-lift transition-all duration-300 animate-fade-in">
       <CardHeader className="p-0">
         <Link to={`/product/${product.id}`}>
           <div className="aspect-square overflow-hidden rounded-t-lg">
@@ -47,7 +47,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
       </CardHeader>
       <CardContent className="p-4">
-        <Link to={`/product/${product.id}`}>
+        <Link to={`/product/${product.id}`} className="story-link">
           <CardTitle className="text-lg mb-2 hover:text-primary transition-colors">{product.name}</CardTitle>
         </Link>
         <p className="text-muted-foreground text-sm mb-3">{product.description}</p>
@@ -63,7 +63,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <Button 
           onClick={handleAddToCart}
           disabled={product.stock_quantity === 0}
-          className="w-full"
+          className="w-full hover-scale"
         >
           <ShoppingCart className="w-4 h-4 mr-2" />
           {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}

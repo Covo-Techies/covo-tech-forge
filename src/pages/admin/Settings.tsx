@@ -71,8 +71,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-6 animate-fade-in">
+      <div className="fade-in-up">
         <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
         <p className="text-muted-foreground">Configure your store settings and preferences.</p>
       </div>
@@ -102,7 +102,7 @@ export default function Settings() {
         </TabsList>
 
         <TabsContent value="store">
-          <Card>
+          <Card className="hover-lift">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Store className="h-5 w-5" />
@@ -163,13 +163,13 @@ export default function Settings() {
                 />
                 <Label htmlFor="maintenanceMode">Maintenance Mode</Label>
               </div>
-              <Button onClick={handleSaveStoreSettings}>Save Store Settings</Button>
+              <Button onClick={handleSaveStoreSettings} className="hover-scale">Save Store Settings</Button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="currency">
-          <Card>
+          <Card className="hover-lift">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
@@ -186,9 +186,7 @@ export default function Settings() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="USD">USD - US Dollar</SelectItem>
-                      <SelectItem value="EUR">EUR - Euro</SelectItem>
-                      <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                      <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                      <SelectItem value="KSH">KSH - Kenyan Shilling</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

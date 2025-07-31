@@ -28,11 +28,11 @@ export default function PaymentSuccess() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16 animate-fade-in">
         <div className="max-w-md mx-auto">
-          <Card>
+          <Card className="animate-scale-in hover-lift">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 pulse-slow">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
               <CardTitle className="text-2xl text-green-600">Payment Successful!</CardTitle>
@@ -49,14 +49,14 @@ export default function PaymentSuccess() {
               <div className="space-y-2 pt-4">
                 <Button 
                   onClick={() => navigate('/dashboard')} 
-                  className="w-full"
+                  className="w-full hover-scale"
                 >
                   View Orders
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => navigate('/products')} 
-                  className="w-full"
+                  className="w-full hover-scale"
                 >
                   Continue Shopping
                 </Button>
