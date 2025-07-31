@@ -169,6 +169,7 @@ export type Database = {
       products: {
         Row: {
           active: boolean | null
+          brand: string | null
           category: string | null
           created_at: string
           description: string | null
@@ -177,11 +178,13 @@ export type Database = {
           image_url: string | null
           name: string
           price: number
+          specifications: Json | null
           stock_quantity: number
           updated_at: string
         }
         Insert: {
           active?: boolean | null
+          brand?: string | null
           category?: string | null
           created_at?: string
           description?: string | null
@@ -190,11 +193,13 @@ export type Database = {
           image_url?: string | null
           name: string
           price: number
+          specifications?: Json | null
           stock_quantity?: number
           updated_at?: string
         }
         Update: {
           active?: boolean | null
+          brand?: string | null
           category?: string | null
           created_at?: string
           description?: string | null
@@ -203,6 +208,7 @@ export type Database = {
           image_url?: string | null
           name?: string
           price?: number
+          specifications?: Json | null
           stock_quantity?: number
           updated_at?: string
         }

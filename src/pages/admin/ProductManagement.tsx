@@ -22,6 +22,8 @@ interface Product {
   image_url?: string;
   active: boolean;
   featured: boolean;
+  brand?: string;
+  specifications?: any;
 }
 
 export default function ProductManagement() {
@@ -38,6 +40,8 @@ export default function ProductManagement() {
     category: '',
     stock_quantity: '',
     image_url: '',
+    brand: '',
+    specifications: '{}',
     active: true,
     featured: false,
   });
@@ -54,7 +58,7 @@ export default function ProductManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data || []) as Product[]);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -75,6 +79,8 @@ export default function ProductManagement() {
       category: '',
       stock_quantity: '',
       image_url: '',
+      brand: '',
+      specifications: '{}',
       active: true,
       featured: false,
     });
@@ -90,6 +96,8 @@ export default function ProductManagement() {
       category: product.category || '',
       stock_quantity: product.stock_quantity.toString(),
       image_url: product.image_url || '',
+      brand: product.brand || '',
+      specifications: JSON.stringify(product.specifications || {}),
       active: product.active,
       featured: product.featured,
     });
@@ -107,6 +115,8 @@ export default function ProductManagement() {
         category: formData.category || null,
         stock_quantity: parseInt(formData.stock_quantity),
         image_url: formData.image_url || null,
+        brand: formData.brand || null,
+        specifications: formData.specifications ? JSON.parse(formData.specifications) : {},
         active: formData.active,
         featured: formData.featured,
       };
@@ -265,11 +275,32 @@ export default function ProductManagement() {
               </div>
 
               <div>
+                <Label htmlFor="brand">Brand</Label>
+                <Input
+                  id="brand"
+                  value={formData.brand}
+                  onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
+                  placeholder="e.g., Apple, Samsung, HP"
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="specifications">Specifications (JSON)</Label>
+                <Textarea
+                  id="specifications"
+                  value={formData.specifications}
+                  onChange={(e) => setFormData(prev => ({ ...prev, specifications: e.target.value }))}
+                  placeholder='{"RAM": "8GB", "Processor": "Intel i7", "Screen Size": "15.6 inches"}'
+                  className="font-mono text-sm"
                 />
               </div>
 
@@ -316,6 +347,7 @@ export default function ProductManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Brand</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
@@ -343,6 +375,7 @@ export default function ProductManagement() {
                       </div>
                     </div>
                   </TableCell>
+                  <TableCell>{product.brand || 'No Brand'}</TableCell>
                   <TableCell>{product.category || 'Uncategorized'}</TableCell>
                   <TableCell>${product.price.toFixed(2)}</TableCell>
                   <TableCell>

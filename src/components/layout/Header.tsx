@@ -28,6 +28,7 @@ import { useCart } from '@/hooks/useCart';
 export default function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const { user, signOut } = useAuth();
   const { getTotalItems } = useCart();
   const navigate = useNavigate();
@@ -35,6 +36,13 @@ export default function Header() {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
   };
 
   const categories = [
@@ -101,16 +109,18 @@ export default function Header() {
 
           {/* Search bar */}
           <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
+            <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 type="search"
                 placeholder="Search for products..."
                 className="pl-10 pr-4 w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
               />
-            </div>
+            </form>
           </div>
 
           {/* Right side actions */}
@@ -185,14 +195,16 @@ export default function Header() {
               </SheetTrigger>
               <SheetContent side="right">
                 <div className="flex flex-col space-y-4 mt-8">
-                  <div className="relative">
+                  <form onSubmit={handleSearch} className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
                       type="search"
                       placeholder="Search products..."
                       className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                  </div>
+                  </form>
                   
                   <nav className="flex flex-col space-y-4">
                     <Link 
