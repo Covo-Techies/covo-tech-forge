@@ -75,7 +75,7 @@ serve(async (req) => {
         amount: amountInKobo,
         currency: "KES",
         callback_url: `${req.headers.get("origin")}/payment-success`,
-        cancel_action: `${req.headers.get("origin")}/cart`,
+        cancel_action: `${req.headers.get("origin")}/payment-cancel`,
         metadata: {
           user_id: user.id,
           total_amount: totalAmount.toString(),

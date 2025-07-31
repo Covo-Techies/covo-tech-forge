@@ -25,6 +25,8 @@ import Messages from "./pages/admin/Messages";
 import Settings from "./pages/admin/Settings";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/payment-cancel" element={<PaymentCancel />} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLayout />}>
