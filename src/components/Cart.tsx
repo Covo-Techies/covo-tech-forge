@@ -4,10 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Cart() {
   const { items, updateQuantity, removeFromCart, getTotalPrice, getTotalItems } = useCart();
+  const navigate = useNavigate();
 
   if (items.length === 0) {
     return (
@@ -91,7 +93,7 @@ export default function Cart() {
         <Button 
           className="w-full" 
           size="lg"
-          onClick={() => window.location.href = '/checkout'}
+          onClick={() => navigate('/checkout')}
         >
           Proceed to Checkout
         </Button>
