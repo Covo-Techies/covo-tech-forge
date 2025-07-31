@@ -37,7 +37,8 @@ export default function Contact() {
     {
       icon: MapPin,
       title: "Visit Us",
-      details: ["123 Commerce Street", "Business District", "City, State 12345"]
+      details: ["Covo Square", "Lavington", "Nairobi, Kenya"]
+
     },
     {
       icon: Phone,
