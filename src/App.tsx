@@ -18,6 +18,11 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProductManagement from "./pages/admin/ProductManagement";
 import OrderManagement from "./pages/admin/OrderManagement";
 import CustomerManagement from "./pages/admin/CustomerManagement";
+import Analytics from "./pages/admin/Analytics";
+import Promotions from "./pages/admin/Promotions";
+import UserRoles from "./pages/admin/UserRoles";
+import Messages from "./pages/admin/Messages";
+import Settings from "./pages/admin/Settings";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 
@@ -48,6 +53,11 @@ const App = () => (
                 <Route path="products" element={<ProductManagement />} />
                 <Route path="orders" element={<OrderManagement />} />
                 <Route path="customers" element={<CustomerManagement />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="promotions" element={<Promotions />} />
+                <Route path="roles" element={<UserRoles />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="settings" element={<Settings />} />
               </Route>
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
