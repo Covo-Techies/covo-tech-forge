@@ -26,9 +26,16 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    // Get cart items for the user
+    // Create service client for database operations (to bypass RLS)
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Get cart items for the user using service client
     console.log('Fetching cart items for user:', user.id);
-    const { data: cartItems, error: cartError } = await supabaseClient
+    const { data: cartItems, error: cartError } = await supabaseService
       .from('cart_items')
       .select(`
         quantity,
@@ -37,7 +44,10 @@ serve(async (req) => {
       .eq('user_id', user.id);
 
     console.log('Cart items response:', { cartItems, cartError });
-    if (cartError) throw cartError;
+    if (cartError) {
+      console.error('Cart error details:', cartError);
+      throw new Error(`Failed to fetch cart items: ${cartError.message}`);
+    }
     if (!cartItems || cartItems.length === 0) {
       console.log('No cart items found for user:', user.id);
       throw new Error("Cart is empty");
@@ -78,12 +88,7 @@ serve(async (req) => {
       throw new Error(paystackData.message || "Failed to initialize payment");
     }
 
-    // Create order record in Supabase
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
+    // Create order record in Supabase using existing service client
 
     const { data: order, error: orderError } = await supabaseService
       .from("orders")
