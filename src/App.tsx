@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProductManagement from "./pages/admin/ProductManagement";
+import FeaturedProducts from "./pages/admin/FeaturedProducts";
 import OrderManagement from "./pages/admin/OrderManagement";
 import CustomerManagement from "./pages/admin/CustomerManagement";
 import Analytics from "./pages/admin/Analytics";
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<ProductManagement />} />
+                <Route path="featured-products" element={<FeaturedProducts />} />
                 <Route path="orders" element={<OrderManagement />} />
                 <Route path="customers" element={<CustomerManagement />} />
                 <Route path="analytics" element={<Analytics />} />

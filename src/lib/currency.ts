@@ -19,7 +19,7 @@ export const CURRENCY_CONFIGS: Record<string, CurrencySettings> = {
 
 export function formatCurrency(
   amount: number,
-  currencyCode: 'USD' | 'KSH' = 'USD'
+  currencyCode: 'USD' | 'KSH' = 'KSH'
 ): string {
   const config = CURRENCY_CONFIGS[currencyCode];
   

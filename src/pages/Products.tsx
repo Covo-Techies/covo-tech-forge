@@ -32,6 +32,13 @@ export default function Products() {
 
   useEffect(() => {
     fetchProducts();
+    
+    // Handle URL params for category filtering
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    if (categoryParam && categories.includes(categoryParam)) {
+      setSelectedCategory(categoryParam);
+    }
   }, []);
 
   useEffect(() => {

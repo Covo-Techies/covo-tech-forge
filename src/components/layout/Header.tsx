@@ -38,9 +38,9 @@ export default function Header() {
   };
 
   const categories = [
-    { name: 'Laptops', icon: Laptop, href: '/shop?category=laptops' },
-    { name: 'Phones', icon: Smartphone, href: '/shop?category=phones' },
-    { name: 'Accessories', icon: Headphones, href: '/shop?category=accessories' }
+    { name: 'Laptops', icon: Laptop, href: '/products?category=Laptops' },
+    { name: 'Phones', icon: Smartphone, href: '/products?category=Phones' },
+    { name: 'Accessories', icon: Headphones, href: '/products?category=Accessories' }
   ];
 
   return (
@@ -49,8 +49,8 @@ export default function Header() {
       <div className="bg-primary text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="flex h-10 items-center justify-between text-sm">
-            <p>Free shipping on orders over $299</p>
-            <p>Call us: (555) 123-4567</p>
+            <p>covotechnologies@gmail.com</p>
+            <p className="underline">Call us: +254795997546</p>
           </div>
         </div>
       </div>

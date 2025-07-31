@@ -175,7 +175,7 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">KSH {stats.totalRevenue.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">All time revenue</p>
           </CardContent>
         </Card>
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
                       {order.status}
                     </Badge>
                     <p className="font-semibold mt-1">
-                      ${Number(order.total_amount).toFixed(2)}
+                      KSH {Number(order.total_amount).toFixed(2)}
                     </p>
                   </div>
                 </div>

@@ -1,8 +1,11 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/layout/Header';
+import { supabase } from '@/integrations/supabase/client';
+import { formatCurrency } from '@/lib/currency';
 import { 
   Star, 
   ShoppingCart, 
@@ -16,63 +19,55 @@ import {
   Watch
 } from 'lucide-react';
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  category: string;
+  stock_quantity: number;
+  featured: boolean;
+}
+
 const Index = () => {
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "MacBook Pro 16-inch",
-      price: 2399,
-      originalPrice: 2599,
-      image: "/placeholder.svg",
-      rating: 4.9,
-      reviews: 127,
-      badge: "Best Seller",
-      category: "laptops"
-    },
-    {
-      id: 2,
-      name: "iPhone 15 Pro Max",
-      price: 1199,
-      image: "/placeholder.svg",
-      rating: 4.8,
-      reviews: 89,
-      badge: "New",
-      category: "phones"
-    },
-    {
-      id: 3,
-      name: "AirPods Pro 2",
-      price: 249,
-      originalPrice: 299,
-      image: "/placeholder.svg",
-      rating: 4.7,
-      reviews: 203,
-      badge: "Sale",
-      category: "accessories"
-    },
-    {
-      id: 4,
-      name: "iPad Air 5th Gen",
-      price: 599,
-      image: "/placeholder.svg",
-      rating: 4.6,
-      reviews: 156,
-      category: "tablets"
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, []);
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('active', true)
+        .eq('featured', true)
+        .limit(4);
+
+      if (error) throw error;
+      setFeaturedProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching featured products:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const categories = [
-    { name: "Laptops", icon: Laptop, count: "120+ products", href: "/shop?category=laptops" },
-    { name: "Smartphones", icon: Smartphone, count: "85+ products", href: "/shop?category=phones" },
-    { name: "Accessories", icon: Headphones, count: "200+ products", href: "/shop?category=accessories" },
-    { name: "Tablets", icon: Watch, count: "45+ products", href: "/shop?category=tablets" }
+    { name: "Laptops", icon: Laptop, count: "120+ products", href: "/products?category=Laptops" },
+    { name: "Smartphones", icon: Smartphone, count: "85+ products", href: "/products?category=Phones" },
+    { name: "Accessories", icon: Headphones, count: "200+ products", href: "/products?category=Accessories" },
+    { name: "Tablets", icon: Watch, count: "45+ products", href: "/products?category=Tablets" }
   ];
 
   const features = [
     {
       icon: Truck,
-      title: "Free Shipping",
-      description: "On orders over $299"
+      title: "Fast Delivery",
+      description: "Quick & reliable shipping"
     },
     {
       icon: Shield,
@@ -104,7 +99,7 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" variant="secondary" asChild>
-                  <Link to="/shop">
+                  <Link to="/products">
                     Shop Now
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -174,74 +169,78 @@ const Index = () => {
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-3xl font-bold">Featured Products</h2>
             <Button variant="outline" asChild>
-              <Link to="/shop">
+              <Link to="/products">
                 View All
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <Card key={product.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300">
-                <div className="relative">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {product.badge && (
-                    <Badge 
-                      className="absolute top-2 left-2"
-                      variant={product.badge === "Sale" ? "destructive" : "default"}
-                    >
-                      {product.badge}
+          {loading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <div className="aspect-square bg-muted rounded-t-lg" />
+                  <CardContent className="p-4">
+                    <div className="h-4 bg-muted rounded mb-2" />
+                    <div className="h-3 bg-muted rounded mb-3" />
+                    <div className="h-6 bg-muted rounded" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-12">
+              <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">No featured products available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product) => (
+                <Card key={product.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover-scale">
+                  <div className="relative">
+                    <img 
+                      src={product.image_url || "/placeholder.svg"} 
+                      alt={product.name}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <Badge className="absolute top-2 left-2" variant="secondary">
+                      Featured
                     </Badge>
-                  )}
-                  <Button 
-                    size="icon" 
-                    variant="secondary" 
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
-                  
-                  <div className="flex items-center mb-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      ({product.reviews})
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-lg font-bold">${product.price}</span>
-                      {product.originalPrice && (
-                        <span className="text-sm text-muted-foreground line-through ml-2">
-                          ${product.originalPrice}
-                        </span>
-                      )}
-                    </div>
-                    <Button size="sm">
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Add
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Heart className="h-4 w-4" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  
+                  <CardContent className="p-4">
+                    <Link to={`/product/${product.id}`}>
+                      <h3 className="font-semibold mb-2 line-clamp-2 hover:text-primary transition-colors">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
+                      </div>
+                      <Button size="sm" className="hover-scale">
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Add
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -276,7 +275,7 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
               <div className="space-y-2">
-                <Link to="/shop" className="block text-muted-foreground hover:text-foreground">Shop</Link>
+                <Link to="/products" className="block text-muted-foreground hover:text-foreground">Shop</Link>
                 <Link to="/about" className="block text-muted-foreground hover:text-foreground">About</Link>
                 <Link to="/contact" className="block text-muted-foreground hover:text-foreground">Contact</Link>
               </div>
@@ -284,9 +283,9 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Categories</h4>
               <div className="space-y-2">
-                <Link to="/shop?category=laptops" className="block text-muted-foreground hover:text-foreground">Laptops</Link>
-                <Link to="/shop?category=phones" className="block text-muted-foreground hover:text-foreground">Phones</Link>
-                <Link to="/shop?category=accessories" className="block text-muted-foreground hover:text-foreground">Accessories</Link>
+                <Link to="/products?category=Laptops" className="block text-muted-foreground hover:text-foreground">Laptops</Link>
+                <Link to="/products?category=Phones" className="block text-muted-foreground hover:text-foreground">Phones</Link>
+                <Link to="/products?category=Accessories" className="block text-muted-foreground hover:text-foreground">Accessories</Link>
               </div>
             </div>
             <div>

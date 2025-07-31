@@ -9,7 +9,8 @@ import {
   Shield,
   MessageSquare,
   Settings,
-  Home
+  Home,
+  Star
 } from "lucide-react";
 import {
   Sidebar,
@@ -26,6 +27,7 @@ import {
 const adminMenuItems = [
   { title: "Overview", url: "/admin", icon: Home },
   { title: "Products", url: "/admin/products", icon: Package },
+  { title: "Featured Products", url: "/admin/featured-products", icon: Star },
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
   { title: "Customers", url: "/admin/customers", icon: Users },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
