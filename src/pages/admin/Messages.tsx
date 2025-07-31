@@ -9,179 +9,155 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Send, User, AlertCircle, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { MessageSquare, Send, User, AlertCircle, CheckCircle, Mail, Clock, Eye } from "lucide-react";
 
-interface Message {
+interface ContactMessage {
   id: string;
-  title: string;
-  content: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  recipient: 'all' | 'customers' | 'staff';
-  status: 'sent' | 'draft';
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'unread' | 'read' | 'replied';
   created_at: string;
+  updated_at: string;
 }
 
 export default function Messages() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    type: 'info' as const,
-    recipient: 'all' as const
-  });
-
   useEffect(() => {
-    // Mock data for messages
-    setMessages([
-      {
-        id: '1',
-        title: 'System Maintenance Notice',
-        content: 'We will be performing scheduled maintenance on Sunday from 2-4 AM.',
-        type: 'warning',
-        recipient: 'all',
-        status: 'sent',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '2',
-        title: 'New Product Launch',
-        content: 'Check out our latest product collection now available!',
-        type: 'success',
-        recipient: 'customers',
-        status: 'sent',
-        created_at: new Date(Date.now() - 86400000).toISOString()
-      }
-    ]);
+    fetchContactMessages();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const fetchContactMessages = async () => {
     try {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        ...formData,
-        status: 'sent',
-        created_at: new Date().toISOString()
-      };
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
       
-      setMessages(prev => [newMessage, ...prev]);
-      toast({ title: "Success", description: "Message sent successfully" });
-      setIsDialogOpen(false);
-      resetForm();
+      // Type assertion to ensure proper typing
+      const typedData = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'unread' | 'read' | 'replied'
+      }));
+      
+      setContactMessages(typedData);
     } catch (error) {
-      console.error('Error sending message:', error);
-      toast({ title: "Error", description: "Failed to send message", variant: "destructive" });
+      console.error('Error fetching contact messages:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch contact messages",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      content: '',
-      type: 'info',
-      recipient: 'all'
-    });
-  };
+  const updateMessageStatus = async (messageId: string, newStatus: 'read' | 'replied') => {
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .update({ status: newStatus })
+        .eq('id', messageId);
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'warning': return <AlertCircle className="h-4 w-4" />;
-      case 'success': return <CheckCircle className="h-4 w-4" />;
-      case 'error': return <AlertCircle className="h-4 w-4" />;
-      default: return <MessageSquare className="h-4 w-4" />;
+      if (error) throw error;
+
+      setContactMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId ? { ...msg, status: newStatus } : msg
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: `Message marked as ${newStatus}`
+      });
+    } catch (error) {
+      console.error('Error updating message status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update message status",
+        variant: "destructive"
+      });
     }
   };
 
-  const getTypeBadgeVariant = (type: string) => {
-    switch (type) {
-      case 'warning': return 'secondary';
-      case 'success': return 'default';
-      case 'error': return 'destructive';
-      default: return 'outline';
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'unread':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'read':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'replied':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      default:
+        return 'bg-muted text-muted-foreground';
     }
   };
+
+  const filteredMessages = contactMessages.filter(message => 
+    statusFilter === 'all' || message.status === statusFilter
+  );
+
+  const unreadCount = contactMessages.filter(msg => msg.status === 'unread').length;
+  const todayCount = contactMessages.filter(msg => 
+    new Date(msg.created_at).toDateString() === new Date().toDateString()
+  ).length;
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 bg-muted rounded w-1/4" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-2">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-8 bg-muted rounded w-1/2" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Messages & Notifications</h2>
-          <p className="text-muted-foreground">Send system messages and manage notifications.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Contact Messages</h2>
+          <p className="text-muted-foreground">Manage customer inquiries and contact form submissions.</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Send className="h-4 w-4 mr-2" />
-              Send Message
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Send New Message</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Message Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Enter message title"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="content">Message Content</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Enter your message"
-                  rows={4}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="type">Message Type</Label>
-                  <Select value={formData.type} onValueChange={(value: any) => setFormData({ ...formData, type: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="info">Info</SelectItem>
-                      <SelectItem value="warning">Warning</SelectItem>
-                      <SelectItem value="success">Success</SelectItem>
-                      <SelectItem value="error">Error</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="recipient">Recipients</Label>
-                  <Select value={formData.recipient} onValueChange={(value: any) => setFormData({ ...formData, recipient: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Users</SelectItem>
-                      <SelectItem value="customers">Customers Only</SelectItem>
-                      <SelectItem value="staff">Staff Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Send Message</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Messages</SelectItem>
+              <SelectItem value="unread">Unread</SelectItem>
+              <SelectItem value="read">Read</SelectItem>
+              <SelectItem value="replied">Replied</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={fetchContactMessages} variant="outline">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Message Stats */}
@@ -189,86 +165,174 @@ export default function Messages() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <Mail className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{messages.length}</div>
-            <p className="text-xs text-muted-foreground">All time messages</p>
+            <div className="text-2xl font-bold">{contactMessages.length}</div>
+            <p className="text-xs text-muted-foreground">All contact messages</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sent Today</CardTitle>
-            <Send className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {messages.filter(m => new Date(m.created_at).toDateString() === new Date().toDateString()).length}
-            </div>
-            <p className="text-xs text-muted-foreground">Messages sent today</p>
+            <div className="text-2xl font-bold text-yellow-600">{unreadCount}</div>
+            <p className="text-xs text-muted-foreground">Require attention</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Today's Messages</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">Online users</p>
+            <div className="text-2xl font-bold">{todayCount}</div>
+            <p className="text-xs text-muted-foreground">Received today</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Message History</CardTitle>
+          <CardTitle>Contact Messages ({filteredMessages.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Recipients</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Sent Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {messages.map((message) => (
-                <TableRow key={message.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium flex items-center gap-2">
-                        {getTypeIcon(message.type)}
-                        {message.title}
-                      </div>
-                      <div className="text-sm text-muted-foreground truncate max-w-xs">
-                        {message.content}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getTypeBadgeVariant(message.type)}>
-                      {message.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="capitalize">{message.recipient}</TableCell>
-                  <TableCell>
-                    <Badge variant={message.status === 'sent' ? 'default' : 'secondary'}>
-                      {message.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(message.created_at).toLocaleDateString()}
-                  </TableCell>
+          {filteredMessages.length === 0 ? (
+            <div className="text-center py-8">
+              <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No contact messages found</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name & Email</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredMessages.map((message) => (
+                  <TableRow key={message.id} className={message.status === 'unread' ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{message.name}</div>
+                        <div className="text-sm text-muted-foreground">{message.email}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-xs">
+                        <div className="font-medium truncate">{message.subject}</div>
+                        <div className="text-sm text-muted-foreground truncate">{message.message}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(message.status)}>
+                        {message.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {new Date(message.created_at).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(message.created_at).toLocaleTimeString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedMessage(message);
+                                if (message.status === 'unread') {
+                                  updateMessageStatus(message.id, 'read');
+                                }
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Contact Message Details</DialogTitle>
+                            </DialogHeader>
+                            {selectedMessage && (
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label className="text-sm font-medium">Name</Label>
+                                    <p className="text-sm">{selectedMessage.name}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">Email</Label>
+                                    <p className="text-sm">{selectedMessage.email}</p>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <Label className="text-sm font-medium">Subject</Label>
+                                  <p className="text-sm">{selectedMessage.subject}</p>
+                                </div>
+
+                                <div>
+                                  <Label className="text-sm font-medium">Message</Label>
+                                  <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">
+                                    {selectedMessage.message}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <Label className="text-sm font-medium">Status</Label>
+                                    <Badge className={getStatusColor(selectedMessage.status)}>
+                                      {selectedMessage.status}
+                                    </Badge>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm font-medium">Received</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {new Date(selectedMessage.created_at).toLocaleString()}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-2 pt-4">
+                                  <Button
+                                    onClick={() => updateMessageStatus(selectedMessage.id, 'replied')}
+                                    className="flex-1"
+                                  >
+                                    <Send className="h-4 w-4 mr-2" />
+                                    Mark as Replied
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => window.open(`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject}`, '_blank')}
+                                  >
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Reply via Email
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
