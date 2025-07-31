@@ -202,14 +202,17 @@ export default function Contact() {
             <CardTitle>Find Our Store</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-muted rounded-lg h-64 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Interactive map would be displayed here</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  123 Commerce Street, Business District, City, State 12345
-                </p>
-              </div>
+            <div className="rounded-lg overflow-hidden h-96">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.7803936589424!2d36.78162767506901!3d-1.302020235653985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f14dae4194c61%3A0x3d74b4c3a0b1c3b5!2sCovo%20Square!5e0!3m2!1sen!2ske!4v1706108400000!5m2!1sen!2ske"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Covo Square Location"
+              />
             </div>
           </CardContent>
         </Card>
