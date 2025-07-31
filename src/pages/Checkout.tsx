@@ -84,8 +84,8 @@ if (user === null) {
       }
 
       if (data?.url) {
-        console.log('Clearing cart and redirecting to:', data.url);
-        await clearCart();
+        console.log('Redirecting to payment URL:', data.url);
+        // Don't clear cart here - it will be cleared after successful payment
         window.location.href = data.url;
       } else {
         throw new Error('No payment URL received');

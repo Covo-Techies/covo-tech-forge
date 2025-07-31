@@ -27,6 +27,7 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
     // Get cart items for the user
+    console.log('Fetching cart items for user:', user.id);
     const { data: cartItems, error: cartError } = await supabaseClient
       .from('cart_items')
       .select(`
@@ -35,8 +36,10 @@ serve(async (req) => {
       `)
       .eq('user_id', user.id);
 
+    console.log('Cart items response:', { cartItems, cartError });
     if (cartError) throw cartError;
     if (!cartItems || cartItems.length === 0) {
+      console.log('No cart items found for user:', user.id);
       throw new Error("Cart is empty");
     }
 
