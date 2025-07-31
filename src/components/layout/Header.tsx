@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
+import logo from '@/assets/logo.png';
 
 export default function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -68,9 +69,11 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">C</span>
-            </div>
+            <img 
+              src={logo} 
+              alt="COVO Technologies" 
+              className="h-10 w-auto"
+            />
             <span className="font-bold text-xl">COVO Technologies</span>
           </Link>
 
