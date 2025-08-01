@@ -24,6 +24,7 @@ import Promotions from "./pages/admin/Promotions";
 import UserRoles from "./pages/admin/UserRoles";
 import Messages from "./pages/admin/Messages";
 import Settings from "./pages/admin/Settings";
+import Payments from "./pages/admin/Payments";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="orders" element={<OrderManagement />} />
                 <Route path="customers" element={<CustomerManagement />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="payments" element={<Payments />} />
                 <Route path="promotions" element={<Promotions />} />
                 <Route path="roles" element={<UserRoles />} />
                 <Route path="messages" element={<Messages />} />
