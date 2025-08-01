@@ -59,7 +59,7 @@ export default function AdminDashboard() {
       console.log('User role:', userRole, 'Error:', roleError);
 
       // For customer count, just count the profiles table for now
-      const { data: profilesCount, error: profilesError } = await supabase
+      const { count: profilesCount, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id', { count: 'exact', head: true });
 
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       // Calculate stats
       const totalProducts = products?.filter(p => p.active).length || 0;
       const totalOrders = orders?.length || 0;
-      const totalCustomers = 0; // Will be updated once we have proper counts
+      const totalCustomers = profilesCount || 0;
       const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
       const pendingOrders = orders?.filter(order => order.status === 'pending').length || 0;
       const lowStockProducts = products?.filter(p => p.active && p.stock_quantity < 10).length || 0;
