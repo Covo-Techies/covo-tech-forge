@@ -10,6 +10,7 @@ import { User, Package, CreditCard, MapPin, Phone, Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { formatCurrency } from '@/lib/currency';
 
 interface Order {
   id: string;
@@ -257,7 +258,7 @@ export default function Dashboard() {
                               {order.status}
                             </Badge>
                             <p className="font-semibold mt-1">
-                              ${order.total_amount.toFixed(2)}
+                              {formatCurrency(order.total_amount)}
                             </p>
                           </div>
                         </div>
@@ -275,7 +276,7 @@ export default function Dashboard() {
                               <div className="flex-1">
                                 <p className="font-medium">{item.product.name}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  Qty: {item.quantity} × ${item.price}
+                                  Qty: {item.quantity} × {formatCurrency(item.price)}
                                 </p>
                               </div>
                             </div>
