@@ -38,10 +38,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const fetchCart = async () => {
     if (!user) {
+      console.log('fetchCart: No user, clearing items');
       setItems([]);
       return;
     }
 
+    console.log('fetchCart: Starting for user:', user.id);
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -54,7 +56,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         `)
         .eq('user_id', user.id);
 
+      console.log('fetchCart: Query result:', { data, error, userIdUsed: user.id });
+
       if (error) throw error;
+      console.log('fetchCart: Setting items:', data);
       setItems(data || []);
     } catch (error) {
       console.error('Error fetching cart:', error);

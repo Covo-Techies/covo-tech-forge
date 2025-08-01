@@ -56,6 +56,7 @@ serve(async (req) => {
     logStep("Request body parsed", { shippingAddress });
 
     // Fetch user's cart items
+    logStep("Fetching cart for user", { userId: user.id });
     const { data: cartItems, error: cartError } = await supabaseClient
       .from('cart_items')
       .select(`
@@ -76,7 +77,19 @@ serve(async (req) => {
       throw new Error(`Failed to fetch cart: ${cartError.message}`);
     }
 
+    logStep("Raw cart query result", { cartItems, itemCount: cartItems?.length || 0 });
+
     if (!cartItems || cartItems.length === 0) {
+      logStep("Cart is empty - checking cart table directly");
+      
+      // Additional debug query to see if there are any cart items for this user
+      const { data: debugCartItems, error: debugError } = await supabaseClient
+        .from('cart_items')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      logStep("Debug cart query", { debugCartItems, debugError });
+      
       throw new Error("Cart is empty");
     }
     logStep("Cart items fetched", { itemCount: cartItems.length });
