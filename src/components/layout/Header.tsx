@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,22 +21,62 @@ import {
   Menu,
   Laptop,
   Smartphone,
-  Headphones
+  Headphones,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const { user, signOut } = useAuth();
   const { getTotalItems } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .in('role', ['admin', 'staff']);
+          
+          if (!error && data && data.length > 0) {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          console.error('Error checking admin role:', error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminRole();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleAdminToggle = (checked: boolean) => {
+    if (checked) {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -165,6 +206,24 @@ export default function Header() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  
+                  {/* Admin Toggle - Only visible to admin users */}
+                  {isAdmin && (
+                    <>
+                      <div className="flex items-center justify-between px-2 py-1.5">
+                        <div className="flex items-center space-x-2">
+                          <Settings className="h-4 w-4" />
+                          <span className="text-sm">Admin Mode</span>
+                        </div>
+                        <Switch
+                          checked={location.pathname.startsWith('/admin')}
+                          onCheckedChange={handleAdminToggle}
+                        />
+                      </div>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
