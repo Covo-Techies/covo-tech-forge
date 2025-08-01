@@ -1,4 +1,5 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Package,
   ShoppingCart,
@@ -10,7 +11,8 @@ import {
   MessageSquare,
   Settings,
   Home,
-  Star
+  Star,
+  ArrowLeft
 } from "lucide-react";
 import {
   Sidebar,
@@ -21,8 +23,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const adminMenuItems = [
   { title: "Overview", url: "/admin", icon: Home },
@@ -41,7 +47,38 @@ const adminMenuItems = [
 export function AdminSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
   const currentPath = location.pathname;
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .in('role', ['admin', 'staff']);
+          
+          if (!error && data && data.length > 0) {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          console.error('Error checking admin role:', error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminRole();
+  }, [user]);
 
   const isActive = (path: string) => {
     if (path === "/admin") {
@@ -56,8 +93,37 @@ export function AdminSidebar() {
       : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground";
   };
 
+  const handleAdminToggle = (checked: boolean) => {
+    if (!checked) {
+      navigate('/');
+    }
+  };
+
   return (
     <Sidebar className={state === "collapsed" ? "w-14" : "w-64"} collapsible="icon">
+      <SidebarHeader className="p-4">
+        {state !== "collapsed" && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm font-medium">Exit Admin</span>
+            </div>
+            <Switch
+              checked={true}
+              onCheckedChange={handleAdminToggle}
+            />
+          </div>
+        )}
+        {state === "collapsed" && (
+          <div className="flex justify-center">
+            <Switch
+              checked={true}
+              onCheckedChange={handleAdminToggle}
+            />
+          </div>
+        )}
+      </SidebarHeader>
+      
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
