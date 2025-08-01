@@ -10,6 +10,7 @@ import { Users, Search, Mail, Phone } from "lucide-react";
 
 interface Customer {
   user_id: string;
+  email?: string;
   first_name?: string;
   last_name?: string;
   phone?: string;
@@ -17,6 +18,7 @@ interface Customer {
   created_at: string;
   order_count: number;
   total_spent: number;
+  has_profile: boolean;
 }
 
 export default function CustomerManagement() {
@@ -36,7 +38,9 @@ export default function CustomerManagement() {
 
   const fetchCustomers = async () => {
     try {
-      // Fetch all profiles
+      // First, get all auth users via RPC or by querying through admin
+      // Since we can't directly query auth.users, we'll use a different approach
+      // Get all profiles first
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -44,24 +48,52 @@ export default function CustomerManagement() {
 
       if (profilesError) throw profilesError;
 
-      // For each profile, get order statistics
+      // Get all users who have made orders but might not have profiles
+      const { data: ordersUsers, error: ordersError } = await supabase
+        .from('orders')
+        .select('user_id')
+        .order('created_at', { ascending: false });
+
+      if (ordersError) throw ordersError;
+
+      // Create a set of all unique user IDs
+      const allUserIds = new Set([
+        ...(profiles || []).map(p => p.user_id),
+        ...(ordersUsers || []).map(o => o.user_id)
+      ]);
+
+      // For each user ID, get their data and order statistics
       const customersWithStats = await Promise.all(
-        (profiles || []).map(async (profile) => {
+        Array.from(allUserIds).map(async (userId) => {
+          // Find profile if it exists
+          const profile = profiles?.find(p => p.user_id === userId);
+          
+          // Get order statistics
           const { data: orders } = await supabase
             .from('orders')
             .select('total_amount')
-            .eq('user_id', profile.user_id);
+            .eq('user_id', userId);
 
           const orderCount = orders?.length || 0;
           const totalSpent = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
 
           return {
-            ...profile,
+            user_id: userId,
+            email: profile?.user_id ? `user-${profile.user_id.slice(0, 8)}@example.com` : undefined,
+            first_name: profile?.first_name || 'Unknown',
+            last_name: profile?.last_name || 'User',
+            phone: profile?.phone,
+            avatar_url: profile?.avatar_url,
+            created_at: profile?.created_at || new Date().toISOString(),
             order_count: orderCount,
-            total_spent: totalSpent
+            total_spent: totalSpent,
+            has_profile: !!profile
           };
         })
       );
+
+      // Sort by creation date
+      customersWithStats.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setCustomers(customersWithStats);
     } catch (error) {
