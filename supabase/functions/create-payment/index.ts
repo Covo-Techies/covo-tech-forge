@@ -57,7 +57,7 @@ serve(async (req) => {
 
     // Fetch user's cart items
     logStep("Fetching cart for user", { userId: user.id });
-    const { data: cartItems, error: cartError } = await supabaseClient
+    const { data: cartItems, error: cartError } = await supabaseService
       .from('cart_items')
       .select(`
         id,
@@ -83,7 +83,7 @@ serve(async (req) => {
       logStep("Cart is empty - checking cart table directly");
       
       // Additional debug query to see if there are any cart items for this user
-      const { data: debugCartItems, error: debugError } = await supabaseClient
+      const { data: debugCartItems, error: debugError } = await supabaseService
         .from('cart_items')
         .select('*')
         .eq('user_id', user.id);
