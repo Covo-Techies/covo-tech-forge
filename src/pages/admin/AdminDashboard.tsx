@@ -49,21 +49,21 @@ export default function AdminDashboard() {
       console.log('Orders data:', orders, 'Error:', ordersError);
       if (ordersError) throw ordersError;
 
-      // Fetch unique customers from auth.users (like CustomerManagement does)
-      const { data: authUsers, error: authUsersError } = await supabase.auth.admin.listUsers();
-      console.log('Auth users data:', authUsers, 'Error:', authUsersError);
-      
-      // Fallback to profiles count if auth admin access fails
-      let customerCount = 0;
-      if (authUsersError || !authUsers) {
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id');
-        console.log('Profiles fallback:', profilesData, 'Error:', profilesError);
-        customerCount = profilesData?.length || 0;
-      } else {
-        customerCount = authUsers.users?.length || 0;
-      }
+      // Check current user's role first
+      const { data: userRole, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      console.log('User role:', userRole, 'Error:', roleError);
+
+      // For customer count, just count the profiles table for now
+      const { data: profilesCount, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id', { count: 'exact', head: true });
+
+      console.log('Profiles count:', profilesCount, 'Error:', profilesError);
 
       // Fetch recent orders with user info
       const { data: recentOrdersData, error: recentError } = await supabase
@@ -78,12 +78,12 @@ export default function AdminDashboard() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (recentError) throw recentError;
+      console.log('Recent orders:', recentOrdersData, 'Error:', recentError);
 
       // Calculate stats
       const totalProducts = products?.filter(p => p.active).length || 0;
       const totalOrders = orders?.length || 0;
-      const totalCustomers = customerCount;
+      const totalCustomers = 0; // Will be updated once we have proper counts
       const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
       const pendingOrders = orders?.filter(order => order.status === 'pending').length || 0;
       const lowStockProducts = products?.filter(p => p.active && p.stock_quantity < 10).length || 0;
