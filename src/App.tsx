@@ -29,6 +29,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
+import WhatsAppSupport from "./components/WhatsAppSupport";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,9 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            
+            {/* WhatsApp Support - Show on all pages except admin */}
+            <WhatsAppSupport className="block admin:hidden" />
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
