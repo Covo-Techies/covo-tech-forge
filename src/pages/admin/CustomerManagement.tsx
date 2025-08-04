@@ -78,6 +78,7 @@ export default function CustomerManagement() {
           const orderCount = orders?.length || 0;
           const totalSpent = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
 
+          console.log('Processing user:', userId, 'Profile:', profile);
           return {
             user_id: userId,
             email: profile?.user_id ? `user-${profile.user_id.slice(0, 8)}@example.com` : undefined,
@@ -236,9 +237,9 @@ export default function CustomerManagement() {
                       </Avatar>
                       <div>
                         <p className="font-medium">
-                          {customer.first_name && customer.last_name 
-                            ? `${customer.first_name} ${customer.last_name}` 
-                            : customer.first_name || customer.last_name || 'Anonymous Customer'}
+                          {customer.first_name?.trim() || customer.last_name?.trim() 
+                            ? `${customer.first_name?.trim() || ''} ${customer.last_name?.trim() || ''}`.trim()
+                            : 'Anonymous Customer'}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           ID: {customer.user_id.slice(0, 8)}
