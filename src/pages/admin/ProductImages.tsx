@@ -281,7 +281,17 @@ export default function ProductImages() {
         ? Math.max(...productImages.map(img => img.display_order))
         : -1;
 
-      const { error } = await supabase
+      // If setting as primary, remove primary status from other images first
+      if (imageForm.is_primary) {
+        const { error: removeError } = await supabase
+          .from('product_images')
+          .update({ is_primary: false })
+          .eq('product_id', selectedProduct);
+
+        if (removeError) throw removeError;
+      }
+
+      const { data: insertedImage, error } = await supabase
         .from('product_images')
         .insert({
           product_id: selectedProduct,
@@ -290,9 +300,21 @@ export default function ProductImages() {
           view_angle: imageForm.view_angle,
           display_order: maxOrder + 1,
           is_primary: imageForm.is_primary
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // If this is set as primary, update the product's main image_url
+      if (imageForm.is_primary && insertedImage) {
+        const { error: updateProductError } = await supabase
+          .from('products')
+          .update({ image_url: imageForm.image_url })
+          .eq('id', selectedProduct);
+
+        if (updateProductError) throw updateProductError;
+      }
 
       toast({
         title: "Success",
@@ -378,6 +400,53 @@ export default function ProductImages() {
       toast({
         title: "Error",
         description: "Failed to delete image",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSetPrimaryImage = async (imageId: string) => {
+    try {
+      // First, remove primary status from all images for this product
+      const { error: removeError } = await supabase
+        .from('product_images')
+        .update({ is_primary: false })
+        .eq('product_id', selectedProduct);
+
+      if (removeError) throw removeError;
+
+      // Then set the selected image as primary
+      const { error: setPrimaryError } = await supabase
+        .from('product_images')
+        .update({ is_primary: true })
+        .eq('id', imageId);
+
+      if (setPrimaryError) throw setPrimaryError;
+
+      // Update the main product image_url with this image
+      const selectedImage = productImages.find(img => img.id === imageId);
+      if (selectedImage) {
+        const imageUrl = getImageUrl(selectedImage);
+        
+        const { error: updateProductError } = await supabase
+          .from('products')
+          .update({ image_url: imageUrl })
+          .eq('id', selectedProduct);
+
+        if (updateProductError) throw updateProductError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Primary image updated successfully"
+      });
+
+      fetchProductImages();
+    } catch (error) {
+      console.error('Error setting primary image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to set primary image",
         variant: "destructive"
       });
     }
@@ -693,6 +762,16 @@ export default function ProductImages() {
                     </div>
                     
                     <div className="flex items-center gap-2">
+                      {!image.is_primary && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSetPrimaryImage(image.id)}
+                          title="Set as primary image"
+                        >
+                          Set Primary
+                        </Button>
+                      )}
                       {image.image_url && !image.storage_path && (
                         <Button
                           variant="ghost"
