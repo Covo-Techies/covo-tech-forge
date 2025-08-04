@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import Header from '@/components/layout/Header';
 
 const HelpCenter = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,6 +115,7 @@ const HelpCenter = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">

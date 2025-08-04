@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import Header from '@/components/layout/Header';
 
 const Returns = () => {
   const [step, setStep] = useState(1);
@@ -64,6 +65,7 @@ const Returns = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">

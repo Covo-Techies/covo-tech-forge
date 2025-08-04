@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import Header from '@/components/layout/Header';
 
 const Warranty = () => {
   const [searchSerial, setSearchSerial] = useState('');
@@ -62,6 +63,7 @@ const Warranty = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Header from "@/components/layout/Header";
 import { Users, Award, Truck, Shield, Star, Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function About() {
   const stats = [
@@ -148,11 +149,11 @@ export default function About() {
               Discover our amazing collection of products and experience the difference. 
               Join thousands of satisfied customers who trust us for their shopping needs.
             </p>
-            <Button size="lg" className="mr-4">
-              Browse Products
+            <Button size="lg" className="mr-4" asChild>
+              <Link to="/products">Browse Products</Link>
             </Button>
-            <Button variant="outline" size="lg">
-              Contact Us
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/contact">Contact Us</Link>
             </Button>
           </CardContent>
         </Card>
