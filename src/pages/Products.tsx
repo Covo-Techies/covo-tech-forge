@@ -85,15 +85,43 @@ export default function Products() {
     filterAndSortProducts();
   }, [products, searchTerm, selectedCategory, selectedBrands, priceRange, selectedSpecs, sortBy]);
 
+  const getImageUrl = (image: any): string => {
+    if (image?.storage_path) {
+      return supabase.storage.from('product-images').getPublicUrl(image.storage_path).data.publicUrl;
+    }
+    return image?.image_url || '';
+  };
+
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: productsData, error } = await supabase
         .from('products')
         .select('*')
         .eq('active', true);
 
       if (error) throw error;
-      setProducts((data || []) as Product[]);
+      
+      // Get primary images for all products
+      const { data: imagesData, error: imagesError } = await supabase
+        .from('product_images')
+        .select('product_id, image_url, storage_path, is_primary, display_order')
+        .eq('is_primary', true);
+
+      if (imagesError) {
+        console.error('Error fetching images:', imagesError);
+      }
+
+      // Transform the data to include proper image URLs
+      const transformedProducts = (productsData || []).map(product => {
+        const primaryImage = imagesData?.find(img => img.product_id === product.id);
+        
+        return {
+          ...product,
+          image_url: primaryImage ? getImageUrl(primaryImage) : product.image_url
+        };
+      });
+      
+      setProducts(transformedProducts as Product[]);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
