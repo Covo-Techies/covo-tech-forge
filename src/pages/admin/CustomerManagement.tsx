@@ -78,7 +78,6 @@ export default function CustomerManagement() {
           const orderCount = orders?.length || 0;
           const totalSpent = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
 
-          console.log('Processing user:', userId, 'Profile:', profile);
           return {
             user_id: userId,
             email: profile?.user_id ? `user-${profile.user_id.slice(0, 8)}@example.com` : undefined,
