@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Search, Mail, Phone } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 
 interface Customer {
   user_id: string;
@@ -80,8 +81,8 @@ export default function CustomerManagement() {
           return {
             user_id: userId,
             email: profile?.user_id ? `user-${profile.user_id.slice(0, 8)}@example.com` : undefined,
-            first_name: profile?.first_name || 'Unknown',
-            last_name: profile?.last_name || 'User',
+            first_name: profile?.first_name || null,
+            last_name: profile?.last_name || null,
             phone: profile?.phone,
             avatar_url: profile?.avatar_url,
             created_at: profile?.created_at || new Date().toISOString(),
@@ -192,11 +193,11 @@ export default function CustomerManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${
+              {
                 customers.length > 0
-                  ? (customers.reduce((sum, c) => sum + c.total_spent, 0) / 
-                     customers.filter(c => c.order_count > 0).length || 1).toFixed(2)
-                  : '0.00'
+                  ? formatCurrency(customers.reduce((sum, c) => sum + c.total_spent, 0) / 
+                     (customers.filter(c => c.order_count > 0).length || 1), 'KSH')
+                  : formatCurrency(0, 'KSH')
               }
             </div>
           </CardContent>
@@ -235,7 +236,9 @@ export default function CustomerManagement() {
                       </Avatar>
                       <div>
                         <p className="font-medium">
-                          {customer.first_name} {customer.last_name}
+                          {customer.first_name && customer.last_name 
+                            ? `${customer.first_name} ${customer.last_name}` 
+                            : customer.first_name || customer.last_name || 'Anonymous Customer'}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           ID: {customer.user_id.slice(0, 8)}
@@ -259,7 +262,7 @@ export default function CustomerManagement() {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-semibold">
-                    ${customer.total_spent.toFixed(2)}
+                    {formatCurrency(customer.total_spent, 'KSH')}
                   </TableCell>
                   <TableCell>
                     <Badge variant={customer.order_count > 0 ? 'default' : 'secondary'}>
