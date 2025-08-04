@@ -199,6 +199,42 @@ export type Database = {
         }
         Relationships: []
       }
+      product_images: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          is_primary: boolean | null
+          product_id: string
+          updated_at: string
+          view_angle: string | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_primary?: boolean | null
+          product_id: string
+          updated_at?: string
+          view_angle?: string | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_primary?: boolean | null
+          product_id?: string
+          updated_at?: string
+          view_angle?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean | null
@@ -277,6 +313,84 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      review_votes: {
+        Row: {
+          created_at: string
+          helpful: boolean
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          helpful: boolean
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          helpful?: boolean
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          helpful_count: number | null
+          id: string
+          images: Json | null
+          incentive_given: string | null
+          moderation_notes: string | null
+          moderation_status: string | null
+          product_id: string
+          rating: number
+          title: string | null
+          total_votes: number | null
+          updated_at: string
+          user_id: string
+          verified_purchase: boolean | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          images?: Json | null
+          incentive_given?: string | null
+          moderation_notes?: string | null
+          moderation_status?: string | null
+          product_id: string
+          rating: number
+          title?: string | null
+          total_votes?: number | null
+          updated_at?: string
+          user_id: string
+          verified_purchase?: boolean | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          images?: Json | null
+          incentive_given?: string | null
+          moderation_notes?: string | null
+          moderation_status?: string | null
+          product_id?: string
+          rating?: number
+          title?: string | null
+          total_votes?: number | null
+          updated_at?: string
+          user_id?: string
+          verified_purchase?: boolean | null
         }
         Relationships: []
       }
