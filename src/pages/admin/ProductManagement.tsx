@@ -216,13 +216,14 @@ export default function ProductManagement() {
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[80vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle>
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="overflow-y-auto max-h-[calc(80vh-120px)] pr-2">
+              <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name">Product Name</Label>
                 <Input
@@ -331,6 +332,7 @@ export default function ProductManagement() {
                 </Button>
               </div>
             </form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
