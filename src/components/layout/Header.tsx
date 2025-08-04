@@ -117,11 +117,11 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
               Home
             </Link>
             <DropdownMenu>
-              <DropdownMenuTrigger className="text-sm font-medium hover:text-primary transition-colors">
+              <DropdownMenuTrigger className="text-sm font-medium hover:text-primary transition-colors flex items-center">
                 Shop
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -140,10 +140,10 @@ export default function Header() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
               About
             </Link>
-            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
               Contact
             </Link>
           </nav>
