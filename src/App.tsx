@@ -29,6 +29,10 @@ import ProductImages from "./pages/admin/ProductImages";
 import ReviewManagement from "./pages/admin/ReviewManagement";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Wishlist from "./pages/Wishlist";
+import HelpCenter from "./pages/HelpCenter";
+import Returns from "./pages/Returns";
+import Warranty from "./pages/Warranty";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import WhatsAppSupport from "./components/WhatsAppSupport";
@@ -53,6 +57,10 @@ const AppContent = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/help" element={<HelpCenter />} />
+        <Route path="/returns" element={<Returns />} />
+        <Route path="/warranty" element={<Warranty />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/payment-cancel" element={<PaymentCancel />} />
         

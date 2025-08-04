@@ -291,9 +291,9 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <div className="space-y-2">
-                <a href="#" className="block text-muted-foreground hover:text-foreground">Help Center</a>
-                <a href="#" className="block text-muted-foreground hover:text-foreground">Returns</a>
-                <a href="#" className="block text-muted-foreground hover:text-foreground">Warranty</a>
+                <Link to="/help" className="block text-muted-foreground hover:text-foreground">Help Center</Link>
+                <Link to="/returns" className="block text-muted-foreground hover:text-foreground">Returns</Link>
+                <Link to="/warranty" className="block text-muted-foreground hover:text-foreground">Warranty</Link>
               </div>
             </div>
           </div>
