@@ -12,6 +12,8 @@ import {
   Settings,
   Home,
   Star,
+  Image,
+  MessageCircle,
   ArrowLeft
 } from "lucide-react";
 import {
@@ -41,6 +43,8 @@ const adminMenuItems = [
   { title: "Promotions", url: "/admin/promotions", icon: Tag },
   { title: "User Roles", url: "/admin/roles", icon: Shield },
   { title: "Messages", url: "/admin/messages", icon: MessageSquare },
+  { title: "Product Images", url: "/admin/product-images", icon: Image },
+  { title: "Reviews", url: "/admin/reviews", icon: MessageCircle },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 

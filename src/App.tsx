@@ -25,6 +25,8 @@ import UserRoles from "./pages/admin/UserRoles";
 import Messages from "./pages/admin/Messages";
 import Settings from "./pages/admin/Settings";
 import Payments from "./pages/admin/Payments";
+import ProductImages from "./pages/admin/ProductImages";
+import ReviewManagement from "./pages/admin/ReviewManagement";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -66,6 +68,8 @@ const AppContent = () => {
           <Route path="promotions" element={<Promotions />} />
           <Route path="roles" element={<UserRoles />} />
           <Route path="messages" element={<Messages />} />
+          <Route path="product-images" element={<ProductImages />} />
+          <Route path="reviews" element={<ReviewManagement />} />
           <Route path="settings" element={<Settings />} />
         </Route>
         
