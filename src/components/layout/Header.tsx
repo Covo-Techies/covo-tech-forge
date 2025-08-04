@@ -171,14 +171,6 @@ export default function Header() {
               <Search className="h-5 w-5" />
             </Button>
 
-            {/* Wishlist */}
-            {user && (
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/wishlist">
-                  <Heart className="h-5 w-5" />
-                </Link>
-              </Button>
-            )}
 
             {/* Cart */}
             <Button variant="ghost" size="icon" className="relative" asChild>

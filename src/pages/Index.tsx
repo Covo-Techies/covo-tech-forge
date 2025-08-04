@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/layout/Header';
+import SEO from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/currency';
 import { 
@@ -83,6 +84,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
+      <SEO 
+        title="Covo Tech Forge - Premium Electronics & Technology Store in Kenya"
+        description="Discover cutting-edge electronics, laptops, smartphones, and tech accessories at Covo Tech Forge. Quality products, competitive prices, and exceptional customer service in Kenya."
+        keywords="electronics Kenya, laptops Nairobi, smartphones, technology store Kenya, computers Nairobi, gadgets, online electronics store"
+        type="website"
+      />
       <Header />
       
       {/* Hero Section */}

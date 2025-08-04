@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,6 +28,7 @@ interface Product {
 }
 
 export default function Products() {
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -193,9 +196,14 @@ export default function Products() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
+  return (
+    <div className="min-h-screen bg-background">
+      <SEO 
+        title={`${searchParams.get('category') ? `${searchParams.get('category')} - ` : ''}Products - Covo Tech Forge`}
+        description="Browse our extensive collection of electronics, laptops, smartphones, and tech accessories. Find the perfect technology products at competitive prices."
+        keywords="buy electronics online, laptop prices Kenya, smartphone deals, tech accessories, computer hardware, gadgets store"
+      />
+      <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
@@ -216,6 +224,11 @@ export default function Products() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={`${searchParams.get('category') ? `${searchParams.get('category')} - ` : ''}Products - Covo Tech Forge`}
+        description="Browse our extensive collection of electronics, laptops, smartphones, and tech accessories. Find the perfect technology products at competitive prices."
+        keywords="buy electronics online, laptop prices Kenya, smartphone deals, tech accessories, computer hardware, gadgets store"
+      />
       <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">

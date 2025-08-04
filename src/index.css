@@ -2,6 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Cross-platform optimizations */
+@layer base {
+  /* Better text rendering */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Better touch interactions */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Ensure proper scaling on all devices */
+  html {
+    font-size: 16px;
+  }
+  
+  /* Prevent zoom on input focus for iOS */
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="url"],
+  input[type="password"],
+  textarea {
+    font-size: 16px;
+  }
+  
+  /* Better button styling for touch devices */
+  button {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+  
+  /* Improve scrolling performance */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+  
+  /* Safe area insets for notched devices */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
