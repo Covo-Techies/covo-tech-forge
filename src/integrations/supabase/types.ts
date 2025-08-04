@@ -207,7 +207,7 @@ export type Database = {
           display_order: number | null
           file_size: number | null
           id: string
-          image_url: string
+          image_url: string | null
           is_primary: boolean | null
           product_id: string
           storage_path: string | null
@@ -221,7 +221,7 @@ export type Database = {
           display_order?: number | null
           file_size?: number | null
           id?: string
-          image_url: string
+          image_url?: string | null
           is_primary?: boolean | null
           product_id: string
           storage_path?: string | null
@@ -235,7 +235,7 @@ export type Database = {
           display_order?: number | null
           file_size?: number | null
           id?: string
-          image_url?: string
+          image_url?: string | null
           is_primary?: boolean | null
           product_id?: string
           storage_path?: string | null

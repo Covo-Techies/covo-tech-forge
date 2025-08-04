@@ -134,12 +134,18 @@ export default function ProductImages() {
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${selectedProduct}/${fileName}`;
 
+    console.log('Uploading file:', { fileName, filePath, fileSize: file.size });
+
     const { error: uploadError } = await supabase.storage
       .from('product-images')
       .upload(filePath, file);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      throw uploadError;
+    }
 
+    console.log('File uploaded successfully to:', filePath);
     return filePath;
   };
 
@@ -172,8 +178,23 @@ export default function ProductImages() {
   };
 
   const handleFileUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0 || !selectedProduct) return;
+    if (!files || files.length === 0 || !selectedProduct) {
+      console.log('Upload validation failed:', { filesCount: files?.length, selectedProduct });
+      return;
+    }
 
+    // Check authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to upload images",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('Starting upload process for', files.length, 'files');
     setUploading(true);
     setUploadProgress(0);
 
