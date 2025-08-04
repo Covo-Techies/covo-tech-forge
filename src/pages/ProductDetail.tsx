@@ -31,7 +31,8 @@ interface Product {
 
 interface ProductImage {
   id: string;
-  image_url: string;
+  image_url: string | null;
+  storage_path: string | null;
   alt_text: string;
   view_angle: string;
   display_order: number;
@@ -84,6 +85,13 @@ export default function ProductDetail() {
   useEffect(() => {
     fetchProductData();
   }, [id]);
+
+  const getImageUrl = (image: ProductImage): string => {
+    if (image.storage_path) {
+      return supabase.storage.from('product-images').getPublicUrl(image.storage_path).data.publicUrl;
+    }
+    return image.image_url || '';
+  };
 
   const fetchProductData = async () => {
     if (!id) return;
@@ -378,14 +386,17 @@ export default function ProductDetail() {
 
   const displayImages = productImages.length > 0 ? productImages : [{ 
     id: 'default', 
-    image_url: product.image_url, 
+    image_url: product.image_url,
+    storage_path: null,
     alt_text: product.name,
     view_angle: 'main',
     display_order: 0,
     is_primary: true 
   }];
 
-  const currentImage = displayImages[selectedImage]?.image_url || product.image_url;
+  const currentImage = productImages.length > 0 
+    ? getImageUrl(displayImages[selectedImage]) 
+    : product.image_url;
 
   return (
     <div className="min-h-screen bg-background">
@@ -433,7 +444,7 @@ export default function ProductDetail() {
                       }`}
                     >
                       <img
-                        src={image.image_url}
+                        src={getImageUrl(image)}
                         alt={image.alt_text}
                         className="w-full h-full object-cover"
                       />

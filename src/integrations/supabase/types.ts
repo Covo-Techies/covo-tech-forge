@@ -202,34 +202,43 @@ export type Database = {
       product_images: {
         Row: {
           alt_text: string | null
+          content_type: string | null
           created_at: string
           display_order: number | null
+          file_size: number | null
           id: string
           image_url: string
           is_primary: boolean | null
           product_id: string
+          storage_path: string | null
           updated_at: string
           view_angle: string | null
         }
         Insert: {
           alt_text?: string | null
+          content_type?: string | null
           created_at?: string
           display_order?: number | null
+          file_size?: number | null
           id?: string
           image_url: string
           is_primary?: boolean | null
           product_id: string
+          storage_path?: string | null
           updated_at?: string
           view_angle?: string | null
         }
         Update: {
           alt_text?: string | null
+          content_type?: string | null
           created_at?: string
           display_order?: number | null
+          file_size?: number | null
           id?: string
           image_url?: string
           is_primary?: boolean | null
           product_id?: string
+          storage_path?: string | null
           updated_at?: string
           view_angle?: string | null
         }

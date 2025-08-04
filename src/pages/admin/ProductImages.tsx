@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Trash2, Edit, Image, Eye, ArrowUp, ArrowDown } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Plus, Trash2, Edit, Image, Eye, ArrowUp, ArrowDown, Upload, Link, Download, ImageIcon } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -21,22 +23,29 @@ interface Product {
 interface ProductImage {
   id: string;
   product_id: string;
-  image_url: string;
+  image_url: string | null;
+  storage_path: string | null;
   alt_text: string;
   view_angle: string;
   display_order: number;
   is_primary: boolean;
+  file_size: number | null;
+  content_type: string | null;
 }
 
 export default function ProductImages() {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showSpecsDialog, setShowSpecsDialog] = useState(false);
   const [editingSpecs, setEditingSpecs] = useState<any>({});
+  const [downloadingUrl, setDownloadingUrl] = useState<string>('');
   
   const [imageForm, setImageForm] = useState({
     image_url: '',
@@ -113,7 +122,130 @@ export default function ProductImages() {
     }
   };
 
-  const handleAddImage = async () => {
+  const getImageUrl = (image: ProductImage): string => {
+    if (image.storage_path) {
+      return supabase.storage.from('product-images').getPublicUrl(image.storage_path).data.publicUrl;
+    }
+    return image.image_url || '';
+  };
+
+  const uploadFile = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${selectedProduct}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    return filePath;
+  };
+
+  const downloadAndStoreImage = async (url: string): Promise<{ path: string; size: number; type: string }> => {
+    setDownloadingUrl(url);
+    
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to download image');
+
+      const blob = await response.blob();
+      const fileExt = url.split('.').pop()?.split('?')[0] || 'jpg';
+      const fileName = `downloaded_${Date.now()}.${fileExt}`;
+      const filePath = `${selectedProduct}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, blob);
+
+      if (uploadError) throw uploadError;
+
+      return {
+        path: filePath,
+        size: blob.size,
+        type: blob.type
+      };
+    } finally {
+      setDownloadingUrl('');
+    }
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !selectedProduct) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: "Error",
+            description: `${file.name} is not a valid image file`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        // Validate file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+          toast({
+            title: "Error",
+            description: `${file.name} is too large. Maximum size is 10MB`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        const storagePath = await uploadFile(file);
+        
+        const maxOrder = productImages.length > 0 
+          ? Math.max(...productImages.map(img => img.display_order))
+          : -1;
+
+        const { error } = await supabase
+          .from('product_images')
+          .insert({
+            product_id: selectedProduct,
+            image_url: null,
+            storage_path: storagePath,
+            alt_text: file.name.split('.')[0],
+            view_angle: 'front',
+            display_order: maxOrder + 1 + i,
+            is_primary: false,
+            file_size: file.size,
+            content_type: file.type
+          });
+
+        if (error) throw error;
+
+        setUploadProgress(((i + 1) / files.length) * 100);
+      }
+
+      toast({
+        title: "Success",
+        description: `${files.length} image(s) uploaded successfully`
+      });
+
+      fetchProductImages();
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload images",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleAddImageUrl = async () => {
     if (!selectedProduct || !imageForm.image_url.trim()) {
       toast({
         title: "Error",
@@ -165,8 +297,48 @@ export default function ProductImages() {
     }
   };
 
+  const handleDownloadAndStore = async (imageId: string, url: string) => {
+    try {
+      const { path, size, type } = await downloadAndStoreImage(url);
+
+      const { error } = await supabase
+        .from('product_images')
+        .update({
+          storage_path: path,
+          file_size: size,
+          content_type: type
+        })
+        .eq('id', imageId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Image downloaded and stored successfully"
+      });
+
+      fetchProductImages();
+    } catch (error) {
+      console.error('Error downloading and storing image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download and store image",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleDeleteImage = async (imageId: string) => {
     try {
+      const image = productImages.find(img => img.id === imageId);
+      
+      // Delete from storage if it's a stored file
+      if (image?.storage_path) {
+        await supabase.storage
+          .from('product-images')
+          .remove([image.storage_path]);
+      }
+
       const { error } = await supabase
         .from('product_images')
         .delete()
@@ -201,11 +373,9 @@ export default function ProductImages() {
     if (newOrder < 0 || newOrder >= productImages.length) return;
 
     try {
-      // Find the image to swap with
       const swapImage = productImages.find(img => img.display_order === newOrder);
       if (!swapImage) return;
 
-      // Update both images
       const { error } = await supabase
         .from('product_images')
         .update({ display_order: newOrder })
@@ -286,6 +456,13 @@ export default function ProductImages() {
     });
   };
 
+  const formatFileSize = (bytes: number | null): string => {
+    if (!bytes) return '';
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -335,103 +512,176 @@ export default function ProductImages() {
                   <Image className="h-5 w-5" />
                   Product Images
                 </CardTitle>
-                <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
-                  <DialogTrigger asChild>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Image
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Product Image</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="image-url">Image URL *</Label>
-                        <Input
-                          id="image-url"
-                          value={imageForm.image_url}
-                          onChange={(e) => setImageForm(prev => ({ ...prev, image_url: e.target.value }))}
-                          placeholder="https://example.com/image.jpg"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="alt-text">Alt Text</Label>
-                        <Input
-                          id="alt-text"
-                          value={imageForm.alt_text}
-                          onChange={(e) => setImageForm(prev => ({ ...prev, alt_text: e.target.value }))}
-                          placeholder="Descriptive text for accessibility"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label>View Angle</Label>
-                        <Select value={imageForm.view_angle} onValueChange={(value) => 
-                          setImageForm(prev => ({ ...prev, view_angle: value }))
-                        }>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {viewAngles.map((angle) => (
-                              <SelectItem key={angle} value={angle}>
-                                {angle.charAt(0).toUpperCase() + angle.slice(1)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="is-primary"
-                          checked={imageForm.is_primary}
-                          onChange={(e) => setImageForm(prev => ({ ...prev, is_primary: e.target.checked }))}
-                        />
-                        <Label htmlFor="is-primary">Set as primary image</Label>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button onClick={handleAddImage} className="flex-1">
-                          Add Image
-                        </Button>
-                        <Button variant="outline" onClick={() => setShowImageDialog(false)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Files
+                  </Button>
+                  <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add URL
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Image from URL</DialogTitle>
+                      </DialogHeader>
+                      <Tabs defaultValue="url" className="w-full">
+                        <TabsList className="grid w-full grid-cols-1">
+                          <TabsTrigger value="url" className="flex items-center gap-2">
+                            <Link className="h-4 w-4" />
+                            From URL
+                          </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="url" className="space-y-4">
+                          <div>
+                            <Label htmlFor="image-url">Image URL *</Label>
+                            <Input
+                              id="image-url"
+                              value={imageForm.image_url}
+                              onChange={(e) => setImageForm(prev => ({ ...prev, image_url: e.target.value }))}
+                              placeholder="https://example.com/image.jpg"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="alt-text">Alt Text</Label>
+                            <Input
+                              id="alt-text"
+                              value={imageForm.alt_text}
+                              onChange={(e) => setImageForm(prev => ({ ...prev, alt_text: e.target.value }))}
+                              placeholder="Descriptive text for accessibility"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>View Angle</Label>
+                            <Select value={imageForm.view_angle} onValueChange={(value) => 
+                              setImageForm(prev => ({ ...prev, view_angle: value }))
+                            }>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {viewAngles.map((angle) => (
+                                  <SelectItem key={angle} value={angle}>
+                                    {angle.charAt(0).toUpperCase() + angle.slice(1)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="is-primary"
+                              checked={imageForm.is_primary}
+                              onChange={(e) => setImageForm(prev => ({ ...prev, is_primary: e.target.checked }))}
+                            />
+                            <Label htmlFor="is-primary">Set as primary image</Label>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button onClick={handleAddImageUrl} className="flex-1">
+                              Add Image
+                            </Button>
+                            <Button variant="outline" onClick={() => setShowImageDialog(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleFileUpload(e.target.files)}
+              />
+
+              {/* Upload Progress */}
+              {uploading && (
+                <div className="mb-4 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Uploading images...</span>
+                    <span>{Math.round(uploadProgress)}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="w-full" />
+                </div>
+              )}
+
+              {/* Drag and Drop Area */}
+              <div
+                className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 mb-4 text-center hover:border-muted-foreground/50 transition-colors"
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleFileUpload(e.dataTransfer.files);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <ImageIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Drop images here or click to select files
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Supports JPEG, PNG, WebP, AVIF (max 10MB each)
+                </p>
+              </div>
+
               <div className="space-y-4">
                 {productImages.length > 0 ? productImages.map((image, index) => (
                   <div key={image.id} className="flex items-center gap-4 p-4 border rounded-lg">
                     <img
-                      src={image.image_url}
+                      src={getImageUrl(image)}
                       alt={image.alt_text}
                       className="w-20 h-20 object-cover rounded border"
                     />
                     
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="outline">{image.view_angle}</Badge>
                         {image.is_primary && <Badge variant="secondary">Primary</Badge>}
+                        {image.storage_path && <Badge variant="default">Stored</Badge>}
+                        {image.image_url && !image.storage_path && <Badge variant="outline">URL</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {image.alt_text || 'No alt text'}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Order: {image.display_order}
-                      </p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span>Order: {image.display_order}</span>
+                        {image.file_size && <span>Size: {formatFileSize(image.file_size)}</span>}
+                        {image.content_type && <span>Type: {image.content_type}</span>}
+                      </div>
                     </div>
                     
                     <div className="flex items-center gap-2">
+                      {image.image_url && !image.storage_path && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownloadAndStore(image.id, image.image_url!)}
+                          disabled={downloadingUrl === image.image_url}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -451,7 +701,7 @@ export default function ProductImages() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.open(image.image_url, '_blank')}
+                        onClick={() => window.open(getImageUrl(image), '_blank')}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -468,7 +718,7 @@ export default function ProductImages() {
                   <div className="text-center py-8 text-muted-foreground">
                     <Image className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No images added yet</p>
-                    <p className="text-sm">Add images to showcase different product angles</p>
+                    <p className="text-sm">Upload files or add images from URLs</p>
                   </div>
                 )}
               </div>
