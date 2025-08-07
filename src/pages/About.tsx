@@ -8,9 +8,9 @@ import { Link } from "react-router-dom";
 
 export default function About() {
   const stats = [
-    { label: "Happy Customers", value: "10,000+", icon: Users },
-    { label: "Years of Experience", value: "5+", icon: Award },
-    { label: "Orders Delivered", value: "50,000+", icon: Truck },
+    { label: "Happy Customers", value: "100+", icon: Users },
+    { label: "Years of Experience", value: "2+", icon: Award },
+    { label: "Orders Delivered", value: "500+", icon: Truck },
     { label: "Quality Guarantee", value: "100%", icon: Shield },
   ];
 
@@ -73,7 +73,7 @@ export default function About() {
             Our journey started with a simple mission: to make online shopping delightful and trustworthy.
           </p>
           <Badge variant="secondary" className="text-lg px-4 py-2">
-            Est. 2019
+            Est. 2025
           </Badge>
         </div>
 
