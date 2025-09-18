@@ -36,6 +36,7 @@ import Warranty from "./pages/Warranty";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import WhatsAppSupport from "./components/WhatsAppSupport";
+import { useKeepAlive } from "./hooks/useKeepAlive";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,18 @@ const AppContent = () => {
   const isAdminPage = location.pathname.startsWith('/admin');
   const isAuthPage = location.pathname === '/auth';
   const shouldShowWhatsApp = !isAdminPage && !isAuthPage;
+
+  // Initialize keep-alive system to prevent Supabase inactivity
+  useKeepAlive({
+    enabled: true,
+    intervalMinutes: 8, // Ping every 8 minutes
+    onPingSuccess: (response) => {
+      console.log('✅ Keep-alive ping successful:', response.timestamp);
+    },
+    onPingError: (error) => {
+      console.warn('⚠️ Keep-alive ping failed, will retry next interval:', error.message);
+    }
+  });
 
   return (
     <>
