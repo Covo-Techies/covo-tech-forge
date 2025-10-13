@@ -214,6 +214,8 @@ serve(async (req) => {
       status: 'pending',
       shipping_address: shippingAddress,
       stripe_session_id: paystackData.data.reference, // Using this field for Paystack reference
+      coupon_id: couponId,
+      discount_amount: discountAmount,
       created_at: new Date().toISOString()
     };
 
