@@ -52,8 +52,8 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     // Parse request body
-    const { shippingAddress } = await req.json();
-    logStep("Request body parsed", { shippingAddress });
+    const { shippingAddress, couponCode } = await req.json();
+    logStep("Request body parsed", { shippingAddress, couponCode });
 
     // Fetch user's cart items
     logStep("Fetching cart for user", { userId: user.id });
@@ -95,10 +95,75 @@ serve(async (req) => {
     logStep("Cart items fetched", { itemCount: cartItems.length });
 
     // Calculate total amount
-    const totalAmount = cartItems.reduce((total, item) => {
+    let totalAmount = cartItems.reduce((total, item) => {
       return total + (item.product.price * item.quantity);
     }, 0);
     logStep("Total amount calculated", { totalAmount });
+
+    // Apply coupon if provided
+    let couponId = null;
+    let discountAmount = 0;
+    
+    if (couponCode) {
+      logStep("Validating coupon", { couponCode });
+      
+      const { data: coupon, error: couponError } = await supabaseService
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode)
+        .eq('active', true)
+        .maybeSingle();
+
+      if (couponError) {
+        logStep("Coupon validation error", { error: couponError });
+        throw new Error(`Coupon validation failed: ${couponError.message}`);
+      }
+
+      if (!coupon) {
+        throw new Error("Invalid or expired coupon code");
+      }
+
+      // Check if coupon has expired
+      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+        throw new Error("This coupon has expired");
+      }
+
+      // Check usage limit
+      if (coupon.usage_limit !== null && coupon.used_count >= coupon.usage_limit) {
+        throw new Error("This coupon has reached its usage limit");
+      }
+
+      // Check minimum order amount
+      if (coupon.minimum_order_amount && totalAmount < coupon.minimum_order_amount) {
+        throw new Error(`Minimum order amount of KSH ${coupon.minimum_order_amount} not met`);
+      }
+
+      // Calculate discount
+      if (coupon.discount_type === 'percentage') {
+        discountAmount = (totalAmount * coupon.discount_value) / 100;
+      } else {
+        discountAmount = Math.min(coupon.discount_value, totalAmount);
+      }
+
+      totalAmount -= discountAmount;
+      couponId = coupon.id;
+      
+      logStep("Coupon applied", { 
+        couponCode, 
+        discountAmount, 
+        newTotal: totalAmount 
+      });
+
+      // Increment coupon usage count
+      const { error: updateError } = await supabaseService
+        .from('coupons')
+        .update({ used_count: coupon.used_count + 1 })
+        .eq('id', coupon.id);
+
+      if (updateError) {
+        logStep("Warning: Failed to update coupon usage", { error: updateError });
+      }
+    }
 
     // Get Paystack secret key
     const paystackSecretKey = Deno.env.get("PAYSTACK_SECRET_KEY");

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
+import { useCoupon } from '@/hooks/useCoupon';
 import Header from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,14 +12,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Tag, X } from 'lucide-react';
 
 export default function Checkout() {
   const { items, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { appliedCoupon, loading: couponLoading, validateCoupon, calculateDiscount, removeCoupon } = useCoupon();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('paystack');
+  const [couponCode, setCouponCode] = useState('');
   
   // Debug logging
   console.log('Checkout component - items:', items);
@@ -57,6 +61,15 @@ if (user === null) {
     return required.every(field => shippingAddress[field].trim() !== '');
   };
 
+  const handleApplyCoupon = async () => {
+    const subtotal = getTotalPrice();
+    await validateCoupon(couponCode, subtotal);
+  };
+
+  const subtotal = getTotalPrice();
+  const discount = calculateDiscount(subtotal);
+  const total = subtotal - discount;
+
   const handleCheckout = async () => {
     if (!validateForm()) {
       toast({
@@ -71,9 +84,13 @@ if (user === null) {
     try {
       console.log('Starting checkout with shipping address:', shippingAddress);
       console.log('Cart items:', items);
+      console.log('Applied coupon:', appliedCoupon);
       
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { shippingAddress }
+        body: { 
+          shippingAddress,
+          couponCode: appliedCoupon?.code || null
+        }
       });
 
       console.log('Payment response:', { data, error });
@@ -226,11 +243,65 @@ if (user === null) {
                 
                 <Separator />
                 
+                {/* Coupon Code Section */}
+                <div className="space-y-2">
+                  <Label htmlFor="coupon" className="flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Have a coupon code?
+                  </Label>
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 bg-success/10 border border-success/20 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-success" />
+                        <span className="font-medium text-success">
+                          {appliedCoupon.code}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeCoupon}
+                        className="h-8 w-8 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        id="coupon"
+                        placeholder="Enter coupon code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponCode.trim()}
+                      >
+                        {couponLoading ? 'Applying...' : 'Apply'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+                
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>KSH {getTotalPrice().toFixed(2)}</span>
+                    <span>KSH {subtotal.toFixed(2)}</span>
                   </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-success">
+                      <span className="flex items-center gap-1">
+                        <Tag className="h-4 w-4" />
+                        Discount ({appliedCoupon?.code})
+                      </span>
+                      <span>-KSH {discount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Shipping</span>
                     <span>Free</span>
@@ -245,7 +316,7 @@ if (user === null) {
                 
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span>KSH {getTotalPrice().toFixed(2)}</span>
+                  <span>KSH {total.toFixed(2)}</span>
                 </div>
                 
                 <Button 
