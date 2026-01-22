@@ -168,7 +168,9 @@ export type Database = {
       }
       orders: {
         Row: {
+          coupon_id: string | null
           created_at: string
+          discount_amount: number | null
           id: string
           shipping_address: Json | null
           status: string
@@ -178,7 +180,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          coupon_id?: string | null
           created_at?: string
+          discount_amount?: number | null
           id?: string
           shipping_address?: Json | null
           status?: string
@@ -188,7 +192,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          coupon_id?: string | null
           created_at?: string
+          discount_amount?: number | null
           id?: string
           shipping_address?: Json | null
           status?: string
@@ -197,7 +203,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_images: {
         Row: {
@@ -401,7 +415,15 @@ export type Database = {
           user_id?: string
           verified_purchase?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reviews_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
