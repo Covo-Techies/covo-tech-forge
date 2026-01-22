@@ -18,8 +18,7 @@ serve(async (req) => {
     const response = {
       status: 'alive',
       timestamp,
-      message: 'Supabase project is active',
-      uptime: process.uptime ? Math.floor(process.uptime()) : null
+      message: 'Supabase project is active'
     }
 
     console.log(`Keep-alive ping received at ${timestamp}`)
