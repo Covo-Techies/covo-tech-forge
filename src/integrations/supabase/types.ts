@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -168,9 +168,7 @@ export type Database = {
       }
       orders: {
         Row: {
-          coupon_id: string | null
           created_at: string
-          discount_amount: number | null
           id: string
           shipping_address: Json | null
           status: string
@@ -180,9 +178,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          coupon_id?: string | null
           created_at?: string
-          discount_amount?: number | null
           id?: string
           shipping_address?: Json | null
           status?: string
@@ -192,9 +188,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          coupon_id?: string | null
           created_at?: string
-          discount_amount?: number | null
           id?: string
           shipping_address?: Json | null
           status?: string
@@ -203,15 +197,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "orders_coupon_id_fkey"
-            columns: ["coupon_id"]
-            isOneToOne: false
-            referencedRelation: "coupons"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_images: {
         Row: {
