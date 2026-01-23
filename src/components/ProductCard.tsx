@@ -2,8 +2,10 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Heart } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import { useWishlist } from '@/hooks/useWishlist';
+import { cn } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -22,13 +24,25 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const inWishlist = isInWishlist(product.id);
 
   const handleAddToCart = () => {
     addToCart(product.id);
   };
 
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product.id);
+    }
+  };
+
   return (
-    <Card className="group hover-lift transition-all duration-300 animate-fade-in">
+    <Card className="group hover-lift transition-all duration-300 animate-fade-in relative">
       <CardHeader className="p-0">
         <Link to={`/product/${product.id}`}>
           <div className="aspect-square overflow-hidden rounded-t-lg">
@@ -45,6 +59,17 @@ export default function ProductCard({ product }: ProductCardProps) {
             Featured
           </Badge>
         )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background",
+            inWishlist && "text-red-500 hover:text-red-600"
+          )}
+          onClick={handleWishlistToggle}
+        >
+          <Heart className={cn("w-5 h-5", inWishlist && "fill-current")} />
+        </Button>
       </CardHeader>
       <CardContent className="p-4">
         <Link to={`/product/${product.id}`} className="story-link">
