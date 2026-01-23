@@ -170,36 +170,45 @@ export type Database = {
         Row: {
           coupon_id: string | null
           created_at: string
+          delivered_at: string | null
           discount_amount: number | null
           id: string
+          shipped_at: string | null
           shipping_address: Json | null
           status: string
           stripe_session_id: string | null
           total_amount: number
+          tracking_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           coupon_id?: string | null
           created_at?: string
+          delivered_at?: string | null
           discount_amount?: number | null
           id?: string
+          shipped_at?: string | null
           shipping_address?: Json | null
           status?: string
           stripe_session_id?: string | null
           total_amount: number
+          tracking_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           coupon_id?: string | null
           created_at?: string
+          delivered_at?: string | null
           discount_amount?: number | null
           id?: string
+          shipped_at?: string | null
           shipping_address?: Json | null
           status?: string
           stripe_session_id?: string | null
           total_amount?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -448,6 +457,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wishlists: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

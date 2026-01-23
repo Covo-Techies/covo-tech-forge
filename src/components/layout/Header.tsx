@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
+import { useWishlist } from '@/hooks/useWishlist';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Header() {
@@ -33,6 +34,7 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
   const { user, signOut } = useAuth();
   const { getTotalItems } = useCart();
+  const { items: wishlistItems } = useWishlist();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -151,7 +153,20 @@ export default function Header() {
               <Search className="h-5 w-5" />
             </Button>
 
-
+            {/* Wishlist */}
+            <Button variant="ghost" size="icon" className="relative" asChild>
+              <Link to="/wishlist">
+                <Heart className="h-5 w-5" />
+                {wishlistItems.length > 0 && (
+                  <Badge 
+                    variant="secondary" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
+                  >
+                    {wishlistItems.length}
+                  </Badge>
+                )}
+              </Link>
+            </Button>
             {/* Cart */}
             <Button variant="ghost" size="icon" className="relative" asChild>
               <Link to="/cart">
