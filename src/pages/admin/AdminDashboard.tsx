@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-import { Package, ShoppingCart, Users, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
+import { Package, ShoppingCart, Users, DollarSign, TrendingUp, AlertCircle, AlertTriangle } from "lucide-react";
 
 interface DashboardStats {
   totalProducts: number;
@@ -10,7 +13,7 @@ interface DashboardStats {
   totalCustomers: number;
   totalRevenue: number;
   pendingOrders: number;
-  lowStockProducts: number;
+  lowStockProducts: { id: string; name: string; stock_quantity: number }[];
 }
 
 export default function AdminDashboard() {
@@ -20,7 +23,7 @@ export default function AdminDashboard() {
     totalCustomers: 0,
     totalRevenue: 0,
     pendingOrders: 0,
-    lowStockProducts: 0,
+    lowStockProducts: [],
   });
   const [loading, setLoading] = useState(true);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
@@ -36,7 +39,7 @@ export default function AdminDashboard() {
       // Fetch products stats
       const { data: products, error: productsError } = await supabase
         .from('products')
-        .select('id, stock_quantity, active');
+        .select('id, name, stock_quantity, active');
 
       console.log('Products data:', products, 'Error:', productsError);
       if (productsError) throw productsError;
@@ -86,7 +89,9 @@ export default function AdminDashboard() {
       const totalCustomers = profilesCount || 0;
       const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
       const pendingOrders = orders?.filter(order => order.status === 'pending').length || 0;
-      const lowStockProducts = products?.filter(p => p.active && p.stock_quantity < 10).length || 0;
+      const lowStockProducts = products
+        ?.filter(p => p.active && p.stock_quantity < 10)
+        .map(p => ({ id: p.id, name: p.name, stock_quantity: p.stock_quantity })) || [];
 
       setStats({
         totalProducts,
@@ -148,6 +153,30 @@ export default function AdminDashboard() {
         </p>
       </div>
 
+      {/* Low Stock Alert Banner */}
+      {stats.lowStockProducts.length > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Low Stock Alert</AlertTitle>
+          <AlertDescription className="flex flex-col gap-2">
+            <p>{stats.lowStockProducts.length} product(s) are running low on stock:</p>
+            <ul className="list-disc list-inside text-sm">
+              {stats.lowStockProducts.slice(0, 5).map(product => (
+                <li key={product.id}>
+                  {product.name} - Only {product.stock_quantity} left
+                </li>
+              ))}
+              {stats.lowStockProducts.length > 5 && (
+                <li>...and {stats.lowStockProducts.length - 5} more</li>
+              )}
+            </ul>
+            <Button variant="outline" size="sm" asChild className="w-fit mt-2">
+              <Link to="/admin/products">View All Products</Link>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -204,13 +233,15 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={stats.lowStockProducts.length > 0 ? "border-destructive" : ""}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Low Stock Alert</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <AlertCircle className={`h-4 w-4 ${stats.lowStockProducts.length > 0 ? "text-destructive" : "text-muted-foreground"}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.lowStockProducts}</div>
+            <div className={`text-2xl font-bold ${stats.lowStockProducts.length > 0 ? "text-destructive" : ""}`}>
+              {stats.lowStockProducts.length}
+            </div>
             <p className="text-xs text-muted-foreground">Products &lt; 10 items</p>
           </CardContent>
         </Card>

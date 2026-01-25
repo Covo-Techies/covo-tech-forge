@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/layout/Header';
 import SEO from '@/components/SEO';
+import RecentlyViewedProducts from '@/components/RecentlyViewedProducts';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/currency';
 import { 
@@ -248,6 +249,13 @@ const Index = () => {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Recently Viewed Products */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <RecentlyViewedProducts maxItems={4} />
         </div>
       </section>
 

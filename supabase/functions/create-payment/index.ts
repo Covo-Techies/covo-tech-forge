@@ -94,6 +94,36 @@ serve(async (req) => {
     }
     logStep("Cart items fetched", { itemCount: cartItems.length });
 
+    // Stock validation - check all items before proceeding
+    const outOfStockItems: string[] = [];
+    const insufficientStockItems: { name: string; available: number; requested: number }[] = [];
+
+    for (const item of cartItems) {
+      if (!item.product.stock_quantity || item.product.stock_quantity <= 0) {
+        outOfStockItems.push(item.product.name);
+      } else if (item.quantity > item.product.stock_quantity) {
+        insufficientStockItems.push({
+          name: item.product.name,
+          available: item.product.stock_quantity,
+          requested: item.quantity
+        });
+      }
+    }
+
+    if (outOfStockItems.length > 0) {
+      const itemsList = outOfStockItems.join(", ");
+      throw new Error(`The following items are out of stock: ${itemsList}. Please remove them from your cart to continue.`);
+    }
+
+    if (insufficientStockItems.length > 0) {
+      const itemDetails = insufficientStockItems
+        .map(item => `${item.name} (only ${item.available} available, you requested ${item.requested})`)
+        .join("; ");
+      throw new Error(`Insufficient stock for: ${itemDetails}. Please reduce quantities.`);
+    }
+
+    logStep("Stock validation passed");
+
     // Calculate total amount
     let totalAmount = cartItems.reduce((total, item) => {
       return total + (item.product.price * item.quantity);
