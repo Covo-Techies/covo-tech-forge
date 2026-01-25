@@ -6,17 +6,22 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { User, Package, CreditCard, MapPin, Phone, Mail } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { User, Package, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/currency';
+import OrderTimeline from '@/components/OrderTimeline';
 
 interface Order {
   id: string;
   total_amount: number;
   status: string;
   created_at: string;
+  tracking_number: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
   order_items: {
     id: string;
     quantity: number;
@@ -78,6 +83,9 @@ export default function Dashboard() {
           total_amount,
           status,
           created_at,
+          tracking_number,
+          shipped_at,
+          delivered_at,
           order_items(
             id,
             quantity,
@@ -244,46 +252,69 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-4">
                   {orders.map((order) => (
-                    <Card key={order.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <p className="font-semibold">Order #{order.id.slice(0, 8)}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(order.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <Badge className={getStatusColor(order.status)}>
-                              {order.status}
-                            </Badge>
-                            <p className="font-semibold mt-1">
-                              {formatCurrency(order.total_amount)}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <Separator className="mb-4" />
-                        
-                        <div className="space-y-2">
-                          {order.order_items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-3">
-                              <img
-                                src={item.product.image_url}
-                                alt={item.product.name}
-                                className="w-12 h-12 object-cover rounded"
-                              />
-                              <div className="flex-1">
-                                <p className="font-medium">{item.product.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  Qty: {item.quantity} × {formatCurrency(item.price)}
+                    <Collapsible key={order.id}>
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <p className="font-semibold">Order #{order.id.slice(0, 8)}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(order.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right flex items-center gap-2">
+                              <div>
+                                <Badge className={getStatusColor(order.status)}>
+                                  {order.status}
+                                </Badge>
+                                <p className="font-semibold mt-1">
+                                  {formatCurrency(order.total_amount)}
                                 </p>
                               </div>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                              </CollapsibleTrigger>
                             </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
+                          </div>
+                          
+                          <Separator className="mb-4" />
+                          
+                          <div className="space-y-2">
+                            {order.order_items.map((item) => (
+                              <div key={item.id} className="flex items-center gap-3">
+                                <img
+                                  src={item.product.image_url}
+                                  alt={item.product.name}
+                                  className="w-12 h-12 object-cover rounded"
+                                />
+                                <div className="flex-1">
+                                  <p className="font-medium">{item.product.name}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Qty: {item.quantity} × {formatCurrency(item.price)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <CollapsibleContent>
+                            <Separator className="my-4" />
+                            <div className="pt-2">
+                              <h4 className="font-semibold mb-4">Order Tracking</h4>
+                              <OrderTimeline
+                                status={order.status}
+                                createdAt={order.created_at}
+                                shippedAt={order.shipped_at}
+                                deliveredAt={order.delivered_at}
+                                trackingNumber={order.tracking_number}
+                              />
+                            </div>
+                          </CollapsibleContent>
+                        </CardContent>
+                      </Card>
+                    </Collapsible>
                   ))}
                 </div>
               )}

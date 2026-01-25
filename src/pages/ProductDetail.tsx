@@ -4,7 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import Header from '@/components/layout/Header';
+import RelatedProducts from '@/components/RelatedProducts';
+import RecentlyViewedProducts from '@/components/RecentlyViewedProducts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -62,6 +65,7 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { addToRecentlyViewed } = useRecentlyViewed();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
@@ -85,6 +89,13 @@ export default function ProductDetail() {
   useEffect(() => {
     fetchProductData();
   }, [id]);
+
+  // Track recently viewed products
+  useEffect(() => {
+    if (id) {
+      addToRecentlyViewed(id);
+    }
+  }, [id, addToRecentlyViewed]);
 
   const getImageUrl = (image: ProductImage): string => {
     if (image.storage_path) {
@@ -774,6 +785,17 @@ export default function ProductDetail() {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Related Products */}
+        {product.category && (
+          <RelatedProducts
+            currentProductId={product.id}
+            category={product.category}
+          />
+        )}
+
+        {/* Recently Viewed Products */}
+        <RecentlyViewedProducts excludeProductId={product.id} />
       </div>
     </div>
   );
