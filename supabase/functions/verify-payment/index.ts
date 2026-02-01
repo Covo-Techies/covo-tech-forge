@@ -130,6 +130,55 @@ serve(async (req) => {
           logStep("Cart cleared for user", { userId: order.user_id });
         }
 
+        // Send order confirmation email
+        try {
+          const orderItems = order.order_items.map((item: any) => ({
+            product_name: item.products?.name || "Product",
+            quantity: item.quantity,
+            price: item.price,
+          }));
+
+          // Get user email from auth
+          const { data: userData } = await supabaseService.auth.admin.getUserById(order.user_id);
+          const userEmail = userData?.user?.email;
+          const userName = userData?.user?.user_metadata?.first_name || "";
+
+          if (userEmail) {
+            const emailPayload = {
+              to: userEmail,
+              customerName: userName,
+              orderId: order.id,
+              orderItems,
+              totalAmount: order.total_amount,
+              shippingAddress: order.shipping_address,
+              type: "confirmation",
+            };
+
+            const emailResponse = await fetch(
+              `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+                },
+                body: JSON.stringify(emailPayload),
+              }
+            );
+
+            if (emailResponse.ok) {
+              logStep("Order confirmation email sent", { to: userEmail });
+            } else {
+              const emailError = await emailResponse.text();
+              logStep("Email send warning", { error: emailError });
+            }
+          } else {
+            logStep("No email found for user", { userId: order.user_id });
+          }
+        } catch (emailErr) {
+          logStep("Email send error (non-blocking)", { error: String(emailErr) });
+        }
+
         logStep("Payment verification complete", { 
           orderId: order.id, 
           amount: amount / 100,
