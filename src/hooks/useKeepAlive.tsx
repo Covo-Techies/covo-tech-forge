@@ -14,7 +14,7 @@ export const useKeepAlive = ({
   onPingSuccess,
   onPingError
 }: KeepAliveConfig = {}) => {
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isActiveRef = useRef(enabled);
 
   const sendKeepAlivePing = async () => {
