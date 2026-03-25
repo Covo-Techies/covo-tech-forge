@@ -32,6 +32,14 @@ interface Product {
   specifications: any;
 }
 
+interface ProductVariant {
+  id: string;
+  size: string | null;
+  color: string | null;
+  price_adjustment: number;
+  stock_quantity: number;
+}
+
 interface ProductImage {
   id: string;
   image_url: string | null;
@@ -73,6 +81,8 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isZooming, setIsZooming] = useState(false);
   const [reviewSortBy, setReviewSortBy] = useState('most_recent');
