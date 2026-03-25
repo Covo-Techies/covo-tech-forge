@@ -512,7 +512,14 @@ export default function ProductDetail() {
                 </div>
                 {product.featured && <Badge variant="secondary">Featured</Badge>}
               </div>
-              <p className="text-2xl font-bold text-primary">KSH {product.price.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">
+                KSH {((selectedVariant ? product.price + selectedVariant.price_adjustment : product.price)).toFixed(2)}
+                {selectedVariant && selectedVariant.price_adjustment !== 0 && (
+                  <span className="text-sm text-muted-foreground ml-2">
+                    (base: KSH {product.price.toFixed(2)} {selectedVariant.price_adjustment > 0 ? '+' : ''}{selectedVariant.price_adjustment.toFixed(2)})
+                  </span>
+                )}
+              </p>
             </div>
 
             <div>
@@ -520,47 +527,113 @@ export default function ProductDetail() {
               <Badge variant="outline">{product.category}</Badge>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <label className="text-sm font-medium">Quantity:</label>
-                <div className="flex items-center border rounded-lg">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="px-4 py-2 min-w-[60px] text-center">{quantity}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
-                    disabled={quantity >= product.stock_quantity}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+            {/* Variant Selectors */}
+            {variants.length > 0 && (() => {
+              const sizes = [...new Set(variants.filter(v => v.size).map(v => v.size!))];
+              const colors = [...new Set(variants.filter(v => v.color).map(v => v.color!))];
+              return (
+                <div className="space-y-4">
+                  {sizes.length > 0 && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Size:</label>
+                      <div className="flex flex-wrap gap-2">
+                        {sizes.map(size => {
+                          const isSelected = selectedVariant?.size === size;
+                          return (
+                            <Button
+                              key={size}
+                              variant={isSelected ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => {
+                                const match = variants.find(v => v.size === size && (!selectedVariant?.color || v.color === selectedVariant.color)) || variants.find(v => v.size === size);
+                                setSelectedVariant(match || null);
+                                setQuantity(1);
+                              }}
+                            >
+                              {size}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {colors.length > 0 && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Color:</label>
+                      <div className="flex flex-wrap gap-2">
+                        {colors.map(color => {
+                          const isSelected = selectedVariant?.color === color;
+                          return (
+                            <Button
+                              key={color}
+                              variant={isSelected ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => {
+                                const match = variants.find(v => v.color === color && (!selectedVariant?.size || v.size === selectedVariant.size)) || variants.find(v => v.color === color);
+                                setSelectedVariant(match || null);
+                                setQuantity(1);
+                              }}
+                            >
+                              {color}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              );
+            })()}
 
-              <div className="text-sm text-muted-foreground">
-                {product.stock_quantity > 0 ? (
-                  <span className="text-green-600">{product.stock_quantity} in stock</span>
-                ) : (
-                  <span className="text-red-600">Out of stock</span>
-                )}
-              </div>
+            <div className="space-y-4">
+              {(() => {
+                const stockQty = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity;
+                const isOutOfStock = stockQty <= 0;
+                return (
+                  <>
+                    <div className="flex items-center gap-4">
+                      <label className="text-sm font-medium">Quantity:</label>
+                      <div className="flex items-center border rounded-lg">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          disabled={quantity <= 1}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="px-4 py-2 min-w-[60px] text-center">{quantity}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setQuantity(Math.min(stockQty, quantity + 1))}
+                          disabled={quantity >= stockQty}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
 
-              <Button
-                onClick={handleAddToCart}
-                disabled={product.stock_quantity === 0}
-                className="w-full"
-                size="lg"
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Add to Cart
-              </Button>
+                    <div className="text-sm text-muted-foreground">
+                      {!isOutOfStock ? (
+                        <span className="text-green-600">{stockQty} in stock</span>
+                      ) : (
+                        <span className="text-red-600">Out of stock</span>
+                      )}
+                    </div>
+
+                    <Button
+                      onClick={handleAddToCart}
+                      disabled={isOutOfStock || (variants.length > 0 && !selectedVariant)}
+                      className="w-full"
+                      size="lg"
+                    >
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      Add to Cart
+                    </Button>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
