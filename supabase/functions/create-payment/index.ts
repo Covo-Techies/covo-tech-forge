@@ -63,6 +63,7 @@ serve(async (req) => {
         id,
         quantity,
         product_id,
+        variant_id,
         product:products (
           id,
           name,
@@ -71,6 +72,23 @@ serve(async (req) => {
         )
       `)
       .eq('user_id', user.id);
+
+    // Fetch variant details for items with variant_id
+    const variantMap: Record<string, { price_adjustment: number; stock_quantity: number; size: string; color: string }> = {};
+    if (cartItems) {
+      const variantIds = cartItems.filter(i => i.variant_id).map(i => i.variant_id);
+      if (variantIds.length > 0) {
+        const { data: variantsData } = await supabaseService
+          .from('product_variants')
+          .select('id, price_adjustment, stock_quantity, size, color')
+          .in('id', variantIds);
+        if (variantsData) {
+          for (const v of variantsData) {
+            variantMap[v.id] = v;
+          }
+        }
+      }
+    }
 
     if (cartError) {
       logStep("Cart fetch error", { error: cartError });
@@ -99,12 +117,18 @@ serve(async (req) => {
     const insufficientStockItems: { name: string; available: number; requested: number }[] = [];
 
     for (const item of cartItems) {
-      if (!item.product.stock_quantity || item.product.stock_quantity <= 0) {
-        outOfStockItems.push(item.product.name);
-      } else if (item.quantity > item.product.stock_quantity) {
+      const variant = item.variant_id ? variantMap[item.variant_id] : null;
+      const stockQty = variant ? variant.stock_quantity : item.product.stock_quantity;
+      const itemName = variant 
+        ? `${item.product.name} (${[variant.size, variant.color].filter(Boolean).join(', ')})`
+        : item.product.name;
+
+      if (!stockQty || stockQty <= 0) {
+        outOfStockItems.push(itemName);
+      } else if (item.quantity > stockQty) {
         insufficientStockItems.push({
-          name: item.product.name,
-          available: item.product.stock_quantity,
+          name: itemName,
+          available: stockQty,
           requested: item.quantity
         });
       }
@@ -126,7 +150,8 @@ serve(async (req) => {
 
     // Calculate total amount
     let totalAmount = cartItems.reduce((total, item) => {
-      return total + (item.product.price * item.quantity);
+      const priceAdj = item.variant_id && variantMap[item.variant_id] ? variantMap[item.variant_id].price_adjustment : 0;
+      return total + ((item.product.price + priceAdj) * item.quantity);
     }, 0);
     logStep("Total amount calculated", { totalAmount });
 
@@ -216,12 +241,16 @@ serve(async (req) => {
         cancel_action: `${req.headers.get("origin")}/payment-cancel`,
         metadata: {
           user_id: user.id,
-          cart_items: cartItems.map(item => ({
-            product_id: item.product_id,
-            name: item.product.name,
-            quantity: item.quantity,
-            price: item.product.price
-          }))
+          cart_items: cartItems.map(item => {
+            const priceAdj = item.variant_id && variantMap[item.variant_id] ? variantMap[item.variant_id].price_adjustment : 0;
+            return {
+              product_id: item.product_id,
+              variant_id: item.variant_id,
+              name: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price + priceAdj
+            };
+          })
         }
       }),
     });
@@ -262,12 +291,16 @@ serve(async (req) => {
     logStep("Order created", { orderId: order.id });
 
     // Create order items
-    const orderItemsData = cartItems.map(item => ({
-      order_id: order.id,
-      product_id: item.product_id,
-      quantity: item.quantity,
-      price: item.product.price
-    }));
+    const orderItemsData = cartItems.map(item => {
+      const priceAdj = item.variant_id && variantMap[item.variant_id] ? variantMap[item.variant_id].price_adjustment : 0;
+      return {
+        order_id: order.id,
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+        price: item.product.price + priceAdj
+      };
+    });
 
     const { error: orderItemsError } = await supabaseService
       .from('order_items')

@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Package } from "lucide-react";
+import { Plus, Edit, Trash2, Package, Layers } from "lucide-react";
+import VariantManagement from "@/components/admin/VariantManagement";
 
 interface Product {
   id: string;
@@ -31,6 +32,7 @@ export default function ProductManagement() {
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [variantProduct, setVariantProduct] = useState<Product | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -395,6 +397,15 @@ export default function ProductManagement() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => setVariantProduct(product)}
+                        className="hover-scale"
+                        title="Manage Variants"
+                      >
+                        <Layers className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleEdit(product)}
                         className="hover-scale"
                       >
@@ -416,6 +427,15 @@ export default function ProductManagement() {
           </Table>
         </CardContent>
       </Card>
+      {/* Variant Management Dialog */}
+      {variantProduct && (
+        <VariantManagement
+          productId={variantProduct.id}
+          productName={variantProduct.name}
+          open={!!variantProduct}
+          onOpenChange={(open) => { if (!open) setVariantProduct(null); }}
+        />
+      )}
     </div>
   );
 }

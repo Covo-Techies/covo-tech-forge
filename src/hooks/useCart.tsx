@@ -3,9 +3,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
+interface ProductVariant {
+  id: string;
+  size: string | null;
+  color: string | null;
+  price_adjustment: number;
+  stock_quantity: number;
+}
+
 interface CartItem {
   id: string;
   product_id: string;
+  variant_id: string | null;
   quantity: number;
   product: {
     id: string;
@@ -14,14 +23,15 @@ interface CartItem {
     image_url: string;
     stock_quantity: number;
   };
+  variant?: ProductVariant | null;
 }
 
 interface CartContextType {
   items: CartItem[];
   loading: boolean;
-  addToCart: (productId: string, quantity?: number) => Promise<void>;
-  updateQuantity: (productId: string, quantity: number) => Promise<void>;
-  removeFromCart: (productId: string) => Promise<void>;
+  addToCart: (productId: string, quantity?: number, variantId?: string | null) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number, variantId?: string | null) => Promise<void>;
+  removeFromCart: (productId: string, variantId?: string | null) => Promise<void>;
   clearCart: () => Promise<void>;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -38,12 +48,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const fetchCart = async () => {
     if (!user) {
-      console.log('fetchCart: No user, clearing items');
       setItems([]);
       return;
     }
 
-    console.log('fetchCart: Starting for user:', user.id);
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -51,16 +59,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .select(`
           id,
           product_id,
+          variant_id,
           quantity,
           product:products(id, name, price, image_url, stock_quantity)
         `)
         .eq('user_id', user.id);
 
-      console.log('fetchCart: Query result:', { data, error, userIdUsed: user.id });
-
       if (error) throw error;
-      console.log('fetchCart: Setting items:', data);
-      setItems(data || []);
+
+      // Fetch variant details for items that have variant_id
+      const itemsWithVariants: CartItem[] = [];
+      for (const item of (data || [])) {
+        let variant: ProductVariant | null = null;
+        if (item.variant_id) {
+          const { data: variantData } = await supabase
+            .from('product_variants')
+            .select('id, size, color, price_adjustment, stock_quantity')
+            .eq('id', item.variant_id)
+            .single();
+          variant = variantData as ProductVariant | null;
+        }
+        itemsWithVariants.push({ ...item, variant } as CartItem);
+      }
+
+      setItems(itemsWithVariants);
     } catch (error) {
       console.error('Error fetching cart:', error);
       toast({
@@ -73,7 +95,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addToCart = async (productId: string, quantity = 1) => {
+  const addToCart = async (productId: string, quantity = 1, variantId: string | null = null) => {
     if (!user) {
       toast({
         title: "Please log in",
@@ -89,9 +111,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .upsert({
           user_id: user.id,
           product_id: productId,
+          variant_id: variantId,
           quantity
         }, {
-          onConflict: 'user_id,product_id'
+          onConflict: 'user_id,product_id,variant_id'
         });
 
       if (error) throw error;
@@ -111,16 +134,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateQuantity = async (productId: string, quantity: number) => {
+  const updateQuantity = async (productId: string, quantity: number, variantId: string | null = null) => {
     if (!user || quantity < 1) return;
 
     try {
-      const { error } = await supabase
+      let query = supabase
         .from('cart_items')
         .update({ quantity })
         .eq('user_id', user.id)
         .eq('product_id', productId);
 
+      if (variantId) {
+        query = query.eq('variant_id', variantId);
+      } else {
+        query = query.is('variant_id', null);
+      }
+
+      const { error } = await query;
       if (error) throw error;
       await fetchCart();
     } catch (error) {
@@ -133,16 +163,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const removeFromCart = async (productId: string) => {
+  const removeFromCart = async (productId: string, variantId: string | null = null) => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      let query = supabase
         .from('cart_items')
         .delete()
         .eq('user_id', user.id)
         .eq('product_id', productId);
 
+      if (variantId) {
+        query = query.eq('variant_id', variantId);
+      } else {
+        query = query.is('variant_id', null);
+      }
+
+      const { error } = await query;
       if (error) throw error;
       await fetchCart();
       toast({
@@ -185,7 +222,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const getTotalPrice = () => {
-    return items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    return items.reduce((total, item) => {
+      const priceAdjustment = item.variant?.price_adjustment || 0;
+      return total + ((item.product.price + priceAdjustment) * item.quantity);
+    }, 0);
   };
 
   useEffect(() => {
