@@ -141,6 +141,18 @@ export default function ProductDetail() {
         setProductImages(imagesData);
       }
 
+      // Fetch product variants
+      const { data: variantsData, error: variantsError } = await supabase
+        .from('product_variants')
+        .select('id, size, color, price_adjustment, stock_quantity')
+        .eq('product_id', id)
+        .eq('active', true);
+
+      if (!variantsError && variantsData) {
+        setVariants(variantsData as ProductVariant[]);
+        setSelectedVariant(null);
+      }
+
       // Fetch reviews with profile data
       let reviewsQuery = supabase
         .from('reviews')
@@ -198,9 +210,17 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (!product) return;
+    if (variants.length > 0 && !selectedVariant) {
+      toast({
+        title: "Select options",
+        description: "Please select a size/color before adding to cart",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
-      await addToCart(product.id, quantity);
+      await addToCart(product.id, quantity, selectedVariant?.id || null);
       toast({
         title: "Added to Cart",
         description: `${quantity} x ${product.name} added to cart`
