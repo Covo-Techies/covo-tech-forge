@@ -95,14 +95,14 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
-        <div className="container mx-auto px-4 py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-4 py-16 md:py-24">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
                 Latest Tech, 
                 <span className="block">Best Prices</span>
               </h1>
-              <p className="text-xl mb-8 text-primary-foreground/90">
+              <p className="text-lg md:text-xl mb-8 text-primary-foreground/90">
                 Discover cutting-edge technology with unbeatable deals. From laptops to accessories, we've got everything you need.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -117,7 +117,7 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
               <img 
                 src="/placeholder.svg" 
                 alt="Latest tech products" 

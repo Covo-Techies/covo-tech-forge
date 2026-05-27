@@ -105,7 +105,9 @@ export default function Header() {
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold">C</span>
             </div>
-            <span className="font-bold text-xl">COVO Technologies</span>
+            <span className="font-bold text-xl">
+              COVO<span className="hidden md:inline"> Technologies</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

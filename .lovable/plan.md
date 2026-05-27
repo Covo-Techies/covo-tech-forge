@@ -1,37 +1,28 @@
+# Fix cramped hero section
 
+## Changes
 
-# UI Refresh: Orange Accent + Animated Hero
+**1. `src/components/layout/Header.tsx` (line 108)**
+Make the brand name responsive so it doesn't crowd the header on tablet/mobile:
+- Show `COVO` by default
+- Show full `COVO Technologies` only on `md` and up
 
-## Color Changes
+```tsx
+<span className="font-bold text-xl">
+  COVO<span className="hidden md:inline"> Technologies</span>
+</span>
+```
 
-Update `src/index.css` CSS variables to an orange/warm palette:
+**2. `src/pages/Index.tsx` (hero, ~line 99 & 120)**
+Reveal the right-side floating cards earlier so the hero feels balanced on tablet-sized screens (~768px+) instead of leaving a large empty space:
+- Change grid from `lg:grid-cols-2` → `md:grid-cols-2`
+- Change the visual wrapper from `hidden lg:block` → `hidden md:block`
+- Slightly reduce hero vertical padding on smaller screens (`py-16 md:py-24`) and tighten headline scale (`text-4xl md:text-5xl lg:text-6xl`) so text + cards fit comfortably side-by-side at 768–1024px.
 
-- **Primary**: warm orange (`24 95% 53%` ~ #f97316)
-- **Primary foreground**: white
-- **Accent**: lighter orange tint for hover states
-- Dark mode variants adjusted accordingly
-
-## Hero Section Redesign
-
-Replace the current flat gradient hero in `src/pages/Index.tsx` with:
-
-- **Background**: warm gradient from deep orange to amber
-- **Left side**: bold headline + subtitle + CTA buttons (kept)
-- **Right side**: 3-4 floating product cards with CSS animations (gentle float/bob), showcasing featured categories with icons
-- Cards will use `animate-[float]` keyframes with staggered delays for a lively feel
-- Subtle background shapes/circles for depth
-
-## New Keyframes
-
-Add to `tailwind.config.ts`:
-- `float` keyframe: gentle up/down bobbing motion
-- Staggered animation delay utility classes
-
-## Files Changed
-
+## Files changed
 | File | Change |
-|------|--------|
-| `src/index.css` | Update CSS variables to orange/warm palette (light + dark) |
-| `tailwind.config.ts` | Add float keyframe animation |
-| `src/pages/Index.tsx` | Redesign hero with gradient background + floating animated cards on the right |
+|---|---|
+| `src/components/layout/Header.tsx` | Responsive brand wordmark (COVO / COVO Technologies) |
+| `src/pages/Index.tsx` | Hero grid + cards visible from `md`, tighter padding & headline scale |
 
+No business logic, routing, or data changes.
