@@ -99,163 +99,54 @@ export default function Header() {
 
       {/* Main header */}
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        {/* Mobile / tablet row (unchanged behavior) */}
+        <div className="flex h-16 items-center justify-between md:hidden">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold">C</span>
             </div>
-            <span className="font-bold text-xl">
-              COVO<span className="hidden md:inline"> Technologies</span>
-            </span>
+            <span className="font-bold text-xl">COVO</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
-              Home
-            </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="text-sm font-medium hover:text-primary transition-colors flex items-center">
-                Shop
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link to="/products" className="flex items-center space-x-2">
-                    <span>All Products</span>
-                  </Link>
-                </DropdownMenuItem>
-                {categories.map((category) => (
-                  <DropdownMenuItem key={category.name} asChild>
-                    <Link to={`/products?category=${category.name}`} className="flex items-center space-x-2">
-                      <category.icon className="h-4 w-4" />
-                      <span>{category.name}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
-              About
-            </Link>
-            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors flex items-center">
-              Contact
-            </Link>
-          </nav>
-
-          {/* Search bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <LiveSearchBar />
-          </div>
-
-          {/* Right side actions */}
-          <div className="flex items-center space-x-4">
-            {/* Desktop search toggle */}
-            <Button variant="ghost" size="icon" className="md:hidden">
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="icon">
               <Search className="h-5 w-5" />
             </Button>
-
-            {/* Wishlist */}
             <Button variant="ghost" size="icon" className="relative" asChild>
               <Link to="/wishlist">
                 <Heart className="h-5 w-5" />
                 {wishlistItems.length > 0 && (
-                  <Badge 
-                    variant="secondary" 
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
-                  >
+                  <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs">
                     {wishlistItems.length}
                   </Badge>
                 )}
               </Link>
             </Button>
-            {/* Cart */}
             <Button variant="ghost" size="icon" className="relative" asChild>
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 {getTotalItems() > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
-                  >
+                  <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs">
                     {getTotalItems()}
                   </Badge>
                 )}
               </Link>
             </Button>
-
-            {/* User menu */}
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <User className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  
-                  {/* Admin Toggle - Only visible to admin users */}
-                  {isAdmin && (
-                    <>
-                      <div className="flex items-center justify-between px-2 py-1.5">
-                        <div className="flex items-center space-x-2">
-                          <Settings className="h-4 w-4" />
-                          <span className="text-sm">Admin Mode</span>
-                        </div>
-                        <Switch
-                          checked={location.pathname.startsWith('/admin')}
-                          onCheckedChange={handleAdminToggle}
-                        />
-                      </div>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard">Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/orders">Orders</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button asChild>
-                <Link to="/auth">Sign In</Link>
-              </Button>
-            )}
-
-            {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right">
                 <div className="flex flex-col space-y-4 mt-8">
-                  <LiveSearchBar 
-                    placeholder="Search products..." 
+                  <LiveSearchBar
+                    placeholder="Search products..."
                     onMobileClose={() => setMobileMenuOpen(false)}
                   />
-                  
                   <nav className="flex flex-col space-y-4">
-                    <Link 
-                      to="/" 
-                      className="text-lg font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Home
-                    </Link>
+                    <Link to="/" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Home</Link>
                     {categories.map((category) => (
                       <Link
                         key={category.name}
@@ -267,27 +158,138 @@ export default function Header() {
                         <span>{category.name}</span>
                       </Link>
                     ))}
-                    <Link 
-                      to="/about" 
-                      className="text-lg font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      About
-                    </Link>
-                    <Link 
-                      to="/contact" 
-                      className="text-lg font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Contact
-                    </Link>
+                    <Link to="/about" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>About</Link>
+                    <Link to="/contact" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
+                    {user ? (
+                      <>
+                        <Link to="/dashboard" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+                        <Link to="/orders" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
+                        <Link to="/profile" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
+                        <button onClick={() => { setMobileMenuOpen(false); handleSignOut(); }} className="text-lg font-medium text-left">Sign out</button>
+                      </>
+                    ) : (
+                      <Link to="/auth" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                    )}
                   </nav>
                 </div>
               </SheetContent>
             </Sheet>
           </div>
         </div>
+
+        {/* Desktop layout: two clean rows */}
+        <div className="hidden md:block">
+          {/* Row 1: Logo | Search | Actions */}
+          <div className="flex h-20 items-center gap-6">
+            <Link to="/" className="flex items-center space-x-2 shrink-0">
+              <div className="h-9 w-9 rounded bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold">C</span>
+              </div>
+              <span className="font-bold text-xl whitespace-nowrap">COVO Technologies</span>
+            </Link>
+
+            <div className="flex-1 max-w-2xl mx-auto">
+              <LiveSearchBar />
+            </div>
+
+            <div className="flex items-center space-x-1 shrink-0">
+              <Button variant="ghost" size="icon" className="relative" asChild>
+                <Link to="/wishlist" aria-label="Wishlist">
+                  <Heart className="h-5 w-5" />
+                  {wishlistItems.length > 0 && (
+                    <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs">
+                      {wishlistItems.length}
+                    </Badge>
+                  )}
+                </Link>
+              </Button>
+              <Button variant="ghost" size="icon" className="relative" asChild>
+                <Link to="/cart" aria-label="Cart">
+                  <ShoppingCart className="h-5 w-5" />
+                  {getTotalItems() > 0 && (
+                    <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs">
+                      {getTotalItems()}
+                    </Badge>
+                  )}
+                </Link>
+              </Button>
+
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Account">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {isAdmin && (
+                      <>
+                        <div className="flex items-center justify-between px-2 py-1.5">
+                          <div className="flex items-center space-x-2">
+                            <Settings className="h-4 w-4" />
+                            <span className="text-sm">Admin Mode</span>
+                          </div>
+                          <Switch
+                            checked={location.pathname.startsWith('/admin')}
+                            onCheckedChange={handleAdminToggle}
+                          />
+                        </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuItem asChild><Link to="/dashboard">Dashboard</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link to="/orders">Orders</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link to="/profile">Profile</Link></DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>Sign out</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button asChild className="ml-2">
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Row 2: Primary navigation */}
+          <nav className="flex items-center justify-center gap-8 h-12 border-t">
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="text-sm font-medium hover:text-primary transition-colors">
+                Shop
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link to="/products">All Products</Link>
+                </DropdownMenuItem>
+                {categories.map((category) => (
+                  <DropdownMenuItem key={category.name} asChild>
+                    <Link to={`/products?category=${category.name}`} className="flex items-center space-x-2">
+                      <category.icon className="h-4 w-4" />
+                      <span>{category.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {categories.map((category) => (
+              <Link
+                key={category.name}
+                to={category.href}
+                className="text-sm font-medium hover:text-primary transition-colors hidden lg:inline"
+              >
+                {category.name}
+              </Link>
+            ))}
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">About</Link>
+            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
+          </nav>
+        </div>
       </div>
+
     </header>
   );
 }
