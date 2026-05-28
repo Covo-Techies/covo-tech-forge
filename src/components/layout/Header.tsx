@@ -259,7 +259,7 @@ export default function Header() {
             <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="text-sm font-medium hover:text-primary transition-colors focus:outline-none">
+                <button type="button" className="inline-flex h-12 items-center text-sm font-medium hover:text-primary transition-colors focus:outline-none">
                   Shop
                 </button>
               </DropdownMenuTrigger>
