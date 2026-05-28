@@ -256,10 +256,10 @@ export default function Header() {
 
           {/* Row 2: Primary navigation */}
           <nav className="flex items-center justify-center gap-8 h-12 border-t">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
+            <Link to="/" className="inline-flex items-center h-12 text-sm font-medium hover:text-primary transition-colors">Home</Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="inline-flex h-12 items-center text-sm font-medium hover:text-primary transition-colors focus:outline-none">
+                <button type="button" className="inline-flex items-center h-12 text-sm font-medium hover:text-primary transition-colors focus:outline-none">
                   Shop
                 </button>
               </DropdownMenuTrigger>
@@ -281,13 +281,13 @@ export default function Header() {
               <Link
                 key={category.name}
                 to={category.href}
-                className="text-sm font-medium hover:text-primary transition-colors hidden lg:inline"
+                className="hidden lg:inline-flex items-center h-12 text-sm font-medium hover:text-primary transition-colors"
               >
                 {category.name}
               </Link>
             ))}
-            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">About</Link>
-            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
+            <Link to="/about" className="inline-flex items-center h-12 text-sm font-medium hover:text-primary transition-colors">About</Link>
+            <Link to="/contact" className="inline-flex items-center h-12 text-sm font-medium hover:text-primary transition-colors">Contact</Link>
           </nav>
         </div>
       </div>
