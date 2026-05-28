@@ -31,53 +31,20 @@ export const useCoupon = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('coupons')
-        .select('*')
-        .eq('code', code.trim().toUpperCase())
-        .eq('active', true)
-        .maybeSingle();
+      const { data: result, error } = await supabase.functions.invoke('validate-coupon', {
+        body: { code: code.trim().toUpperCase(), orderTotal },
+      });
 
-      if (error) throw error;
-
-      if (!data) {
+      if (error || !result || (result as any).error) {
         toast({
           title: "Invalid Coupon",
-          description: "This coupon code does not exist or has expired",
-          variant: "destructive"
+          description: (result as any)?.error || "Unable to validate coupon",
+          variant: "destructive",
         });
         return null;
       }
 
-      // Check if coupon has expired
-      if (data.expires_at && new Date(data.expires_at) < new Date()) {
-        toast({
-          title: "Coupon Expired",
-          description: "This coupon has expired",
-          variant: "destructive"
-        });
-        return null;
-      }
-
-      // Check usage limit
-      if (data.usage_limit !== null && data.used_count >= data.usage_limit) {
-        toast({
-          title: "Coupon Unavailable",
-          description: "This coupon has reached its usage limit",
-          variant: "destructive"
-        });
-        return null;
-      }
-
-      // Check minimum order amount
-      if (data.minimum_order_amount && orderTotal < data.minimum_order_amount) {
-        toast({
-          title: "Minimum Order Not Met",
-          description: `This coupon requires a minimum order of KSH ${data.minimum_order_amount.toFixed(2)}`,
-          variant: "destructive"
-        });
-        return null;
-      }
+      const data = (result as any).coupon;
 
       const coupon: Coupon = {
         ...data,
