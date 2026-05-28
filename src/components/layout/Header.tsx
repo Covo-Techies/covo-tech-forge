@@ -185,7 +185,7 @@ export default function Header() {
               <div className="h-9 w-9 rounded bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold">C</span>
               </div>
-              <span className="font-bold text-xl whitespace-nowrap">COVO Technologies</span>
+              <span className="font-bold text-xl whitespace-nowrap">COVO TECH</span>
             </Link>
 
             <div className="flex-1 max-w-2xl mx-auto">
