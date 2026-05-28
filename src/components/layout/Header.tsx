@@ -258,8 +258,10 @@ export default function Header() {
           <nav className="flex items-center justify-center gap-8 h-12 border-t">
             <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
             <DropdownMenu>
-              <DropdownMenuTrigger className="inline-flex items-center text-sm font-medium leading-none hover:text-primary transition-colors focus:outline-none focus-visible:outline-none">
-                Shop
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="text-sm font-medium hover:text-primary transition-colors focus:outline-none">
+                  Shop
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild>
