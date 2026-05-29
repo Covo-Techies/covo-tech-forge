@@ -67,6 +67,32 @@ export default function UserRoles() {
   };
 
   const updateUserRole = async (userRoleId: string, newRole: "admin" | "staff" | "finance" | "customer") => {
+    const target = userRoles.find((r) => r.id === userRoleId);
+    if (!target) return;
+
+    // Guard: prevent demoting yourself out of admin (locks you out of this page)
+    if (target.user_id === user?.id && target.role === 'admin' && newRole !== 'admin') {
+      toast({
+        title: "Action blocked",
+        description: "You can't change your own admin role. Ask another admin to do it.",
+        variant: "destructive",
+      });
+      fetchUserRoles();
+      return;
+    }
+
+    // Guard: prevent removing the last admin
+    const adminCount = userRoles.filter((r) => r.role === 'admin').length;
+    if (target.role === 'admin' && newRole !== 'admin' && adminCount <= 1) {
+      toast({
+        title: "Action blocked",
+        description: "At least one admin must remain. Promote another user first.",
+        variant: "destructive",
+      });
+      fetchUserRoles();
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('user_roles')
