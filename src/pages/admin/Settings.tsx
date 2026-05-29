@@ -101,7 +101,7 @@ export default function Settings() {
     setSavingKey(key);
     const { error } = await supabase
       .from("app_settings")
-      .upsert({ key, value, updated_by: user?.id ?? null, updated_at: new Date().toISOString() });
+      .upsert([{ key, value: value as any, updated_by: user?.id ?? null, updated_at: new Date().toISOString() }]);
     setSavingKey(null);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
