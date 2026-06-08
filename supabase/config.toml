@@ -11,6 +11,3 @@ verify_jwt = false
 
 [functions.validate-coupon]
 verify_jwt = false
-
-[functions.migrate-base64-images]
-verify_jwt = false
