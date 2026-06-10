@@ -1,25 +1,43 @@
-## Plan: finish security fixes and verify admin flows
+# Logo & Favicon Redesign
 
-### 1. Restrict `app_settings` to admins/staff (security warning)
-Currently any anonymous visitor can read store config (emails, tax, admin UUIDs). The only consumer in the codebase is `src/pages/admin/Settings.tsx`, so locking it down has no public-site impact.
+## 1. New Logo Component
+Create `src/components/Logo.tsx` — a reusable component exposing the icon mark and wordmark.
 
-Migration:
-- Drop the `Anyone can view app settings` SELECT policy.
-- Add a new SELECT policy allowing only users with `admin` or `staff` role (via `has_role`).
-- Tighten the broken INSERT policy (currently has no `WITH CHECK`) to require admin role.
-- Revoke `SELECT` from `anon` on `public.app_settings`.
+**Icon mark (36×36 SVG):**
+- Rounded square (rx=10) filled with a linear gradient `#7C3AED → #5B21B6`
+- Bold, geometric white "C" (custom SVG path, not a font glyph) — open-ended ring with squared terminals
+- Subtle lightning-bolt accent inside the C opening (white, ~60% opacity) to signal tech
+- Soft inner highlight (white 8% gradient) for depth
 
-### 2. Move inline base64 product image to storage (security warning)
-Scan of `public.products` shows exactly 1 row whose `image_url` is a `data:` base64 blob. Plan:
-- One-off script run via the migration/insert tools: fetch that row, decode the base64, upload to the existing public `product-images` bucket at `products/{product_id}.{ext}`, then update `image_url` to the public URL.
-- Add a lightweight client-side guard in the admin Product form (if it allows direct base64 paste) so future uploads go through Storage — only touched if the existing form is the source of the base64. Quick audit first; if uploads already go through Storage, no UI change needed.
+**Wordmark:**
+- Single line, 18px, Inter, letter-spacing 0.05em
+- `COVO` — weight 700, `text-[#1a1a2e] dark:text-white`
+- `TECH` — weight 400, `text-[#7C3AED]`
+- 8px gap (`gap-2`) between icon and wordmark
 
-### 3. Verify role management & Settings end-to-end
-- Sign in as admin, open `/admin/roles`: confirm listing, search, and assigning admin/staff/finance/customer all persist and the self-demotion + last-admin guards still trigger.
-- Open `/admin/settings`: save each of the five tabs and reload to confirm values round-trip through `app_settings`.
-- After step 1's RLS change, re-run the Supabase security scan and mark the two findings as fixed.
+## 2. Header Integration
+In `src/components/layout/Header.tsx`, replace both logo blocks (mobile row + desktop row) with `<Logo />`. Mobile uses icon-only variant (`<Logo showWordmark={false} />`) to preserve current compactness; desktop uses full lockup.
 
-### Technical notes
-- Settings page already uses `useAuth` and upserts with `updated_by`, so RLS will allow admins to keep writing.
-- `product-images` bucket is already public; no bucket changes needed.
-- No frontend code changes required for step 1 beyond what already exists.
+## 3. Favicon
+- Generate matching purple rounded-square "C" as `public/favicon.svg` (same SVG used in the component, exported standalone at 32×32 viewBox)
+- Also write a 180×180 `public/apple-touch-icon.png` rendering (via image generation) for iOS
+- Update `index.html`:
+  - Add `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />` before the existing `.ico` link
+  - Keep `.ico` as fallback
+- Update `public/site.webmanifest` `theme_color` stays `#7C3AED` (already matches)
+
+## 4. Inter Font
+Inter isn't currently loaded. Add a Google Fonts `<link>` in `index.html` (`Inter:wght@400;700`) and apply via `font-family: 'Inter', system-ui` on the wordmark only (no global font change — keeps current site typography intact).
+
+## Technical Details
+- All colors hardcoded in the Logo SVG (brand mark — intentionally outside the design token system, like a real brand asset)
+- Wordmark colors use Tailwind arbitrary values so they stay brand-locked in both themes
+- Icon SVG uses `<defs>` with a unique gradient id to avoid collisions if rendered twice on the page
+- No changes to routing, business logic, or other components
+
+## Files Touched
+- `src/components/Logo.tsx` (new)
+- `src/components/layout/Header.tsx` (swap two logo blocks)
+- `public/favicon.svg` (new)
+- `public/apple-touch-icon.png` (regenerated)
+- `index.html` (favicon link + Inter font link)

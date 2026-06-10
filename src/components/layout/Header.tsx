@@ -28,6 +28,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { supabase } from '@/integrations/supabase/client';
+import Logo from '@/components/Logo';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -102,11 +103,8 @@ export default function Header() {
         {/* Mobile / tablet row (unchanged behavior) */}
         <div className="flex h-16 items-center justify-between md:hidden">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">C</span>
-            </div>
-            <span className="font-bold text-xl">COVO</span>
+          <Link to="/" aria-label="COVO TECH home">
+            <Logo />
           </Link>
 
           <div className="flex items-center space-x-2">
@@ -181,11 +179,8 @@ export default function Header() {
         <div className="hidden md:block">
           {/* Row 1: Logo | Search | Actions */}
           <div className="flex h-20 items-center gap-6">
-            <Link to="/" className="flex items-center space-x-2 shrink-0">
-              <div className="h-9 w-9 rounded bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold">C</span>
-              </div>
-              <span className="font-bold text-xl whitespace-nowrap">COVO TECH</span>
+            <Link to="/" aria-label="COVO TECH home" className="shrink-0">
+              <Logo />
             </Link>
 
             <div className="flex-1 max-w-2xl mx-auto">
