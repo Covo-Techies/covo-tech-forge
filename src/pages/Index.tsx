@@ -112,15 +112,21 @@ const Index = () => {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-                  View Deals
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
+                  asChild
+                >
+                  <Link to="/products?sort=deals">View Deals</Link>
                 </Button>
               </div>
             </div>
             <div className="hidden md:block">
-              <img 
-                src="/placeholder.svg" 
-                alt="Latest tech products" 
+              <img
+                src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1200&q=80"
+                alt="Modern laptop on dark background"
+                loading="eager"
                 className="w-full h-auto rounded-lg shadow-2xl"
               />
             </div>
